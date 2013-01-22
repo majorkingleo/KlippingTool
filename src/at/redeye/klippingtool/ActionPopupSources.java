@@ -5,7 +5,6 @@
 
 package at.redeye.klippingtool;
 
-import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.Root;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

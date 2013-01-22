@@ -18,6 +18,7 @@ public class ListDataContainer implements Serializable
     private String title;    
     private String clipData;
     private ArrayList<String> include_strings;
+    private ArrayList<String> include_strings_line_in_file;
     
     public ListDataContainer( String clipData )
     {
@@ -43,14 +44,21 @@ public class ListDataContainer implements Serializable
     public String getClipData() {
         return clipData;
     }
-    
+
     public void addIncludeString( String include_string )
+    {
+        addIncludeString( include_string, "" );
+    }
+    
+    public void addIncludeString( String include_string, String include_line )
     {
         if( include_strings == null ) {
             include_strings = new ArrayList();
+            include_strings_line_in_file = new ArrayList();
         }
         
         include_strings.add(include_string);
+        include_strings_line_in_file.add(include_line);
     }
         
     public ArrayList<String> getIncludes()
@@ -58,5 +66,9 @@ public class ListDataContainer implements Serializable
         return include_strings;
     }
     
+    public String getIncludeLine( int idx )
+    {
+        return include_strings_line_in_file.get(idx);
+    }    
     
 }

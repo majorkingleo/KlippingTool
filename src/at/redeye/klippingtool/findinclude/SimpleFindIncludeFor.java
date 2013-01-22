@@ -50,6 +50,40 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
     public void pleaseStopWorking() {
         
     }
+    
+    private String getWholeLine( String data, int idx )
+    {
+        int ende = data.indexOf('\n', idx);
+        
+        int count = 0;
+        int i;
+        
+        for( i = idx - 1; i > 0 ; i--, count++ )
+        {
+            if( count > 100 )
+                break;
+            
+            if( data.charAt(i) == '\n' )
+            {
+                i++;
+                break;
+            }
+        }
+        
+        return data.substring(i, ende);
+    }    
+    
+    private String getPartOfCode( String data, int idx )
+    {
+        int ende = data.indexOf('\n', idx);
+        
+        int count = 0;
+        int begin = idx - 100;
+        if( begin < 0 )
+            begin = 0;
+        
+        return data.substring(begin, ende);
+    }
 
     @Override
     public boolean fileFound(File file) {
@@ -57,9 +91,24 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
         String content = ReadFile.read_file(file.getPath());
         
         if( content != null ) {
-            if( content.indexOf(cont.getClipData() ) >= 0 ) {
-                logger.debug("found '" + cont.toString() + "' in "  + file.getPath());
-                cont.addIncludeString(String.format("#include \"%s\"\n", file.getName()) );
+            
+            int idx = 0;
+            while (idx >= 0) {
+                idx = content.indexOf(cont.getClipData(), idx);
+                if (idx >= 0) {
+                    
+                    String line = getWholeLine(content, idx);
+                    
+                    if( line.startsWith("*") ) {
+                        idx += cont.getClipData().length();
+                        continue;
+                    }
+                    
+                    logger.debug("found '" + cont.toString() + "' in " + file.getPath());
+                    cont.addIncludeString(String.format("#include \"%s\"\n", file.getName()),
+                            getPartOfCode(content, idx));
+                    break;
+                }
             }
         }
         
