@@ -6,9 +6,6 @@
 package at.redeye.klippingtool;
 
 import at.redeye.FrameWork.base.Root;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -96,11 +93,14 @@ public class ActionPopupClipboard extends JPopupMenu
                 });
             }                     
         }
+
+         if (cont != null) {  
+            add(new JSeparator()); // SEPARATOR   
+         }
         
-        if (added_something) 
         {
             // about
-            
+
             JMenuItem menuItem = new JMenuItem("Über");
             add(menuItem);
             menuItem.addActionListener(new ActionListener() {
@@ -110,7 +110,8 @@ public class ActionPopupClipboard extends JPopupMenu
                     mainwin.invokeDialogUnique(new About(root));
                 }
             });
-        }       
+        }
+       
     }
 
 }

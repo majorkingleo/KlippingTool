@@ -7,6 +7,7 @@ package at.redeye.klippingtool.findinclude;
 import at.redeye.FrameWork.utilities.ReadFile;
 import at.redeye.FrameWork.utilities.WorkerThread.WorkInterface;
 import at.redeye.klippingtool.ListDataContainer;
+import at.redeye.klippingtool.StatusInformation;
 import at.redeye.klippingtool.lib.FileExtFilter;
 import at.redeye.klippingtool.lib.FileFoundInterface;
 import at.redeye.klippingtool.lib.SearchForFiles;
@@ -24,11 +25,13 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
     private static final Logger logger = Logger.getLogger(SimpleFindIncludeFor.class.getName());
     ListDataContainer cont;
     String source_dir;   
+    StatusInformation statusinfo;
     
-    public SimpleFindIncludeFor( ListDataContainer cont, String source_dir )
+    public SimpleFindIncludeFor( ListDataContainer cont, String source_dir, StatusInformation mainwin )
     {
         this.cont = cont;
         this.source_dir = source_dir;        
+        this.statusinfo = mainwin;
     }
 
     @Override
@@ -100,6 +103,7 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
     public boolean fileFound(File file) {
         
         String content = ReadFile.read_file(file.getPath());
+        statusinfo.setCurrentWorkingFile( file.getName() );
         
         if( content != null ) {
             
@@ -113,7 +117,7 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
                     if( is_comment_line(line) ) {
                         idx += cont.getClipData().length();
                         continue;
-                    }
+                    }                                        
                     
                     logger.debug("found '" + cont.toString() + "' in " + file.getPath());
                     cont.addIncludeString(String.format("#include \"%s\"\n", file.getName()),
@@ -128,11 +132,12 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
 
     @Override
     public boolean diveIntoSubDir(File file) {
-        if( file.getName().equals(".svn") )
-            return false;        
-        
-        else if( file.getName().equals("CVS") )
-            return false;
+        switch (file.getName()) {
+            case ".svn":
+                return false;
+            case "CVS":
+                return false;
+        }
         
         return true;
     }

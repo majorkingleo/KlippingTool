@@ -25,7 +25,7 @@ import javax.swing.JPopupMenu;
  *
  * @author martin
  */
-public class MainWin extends BaseDialog {
+public class MainWin extends BaseDialog implements StatusInformation {
 
     Vector<ListDataContainer> listData;
     boolean firstRun = true;
@@ -33,6 +33,7 @@ public class MainWin extends BaseDialog {
     String last_path;
     Vector<String> listSources;
     FindIncludeFor find_include_for;
+    String current_working_file;
     
     /**
      * Creates new form MainWin
@@ -95,6 +96,10 @@ public class MainWin extends BaseDialog {
                             status_text = "Warte auf Arbeit ... ";
                         } else {
                             status_text = "Suche ... ";
+                            
+                            if( current_working_file != null ) {
+                                status_text += current_working_file;
+                            }
                         }
                         
                         logger.trace(status_text);
@@ -131,7 +136,7 @@ public class MainWin extends BaseDialog {
         // ignore double entries
         if( listData.size() > 0 && listData.get(0).getClipData().equals(data) ) {
             if( firstRun ) {
-                find_include_for.findIncludeFor(listData.get(0), listSources);
+                find_include_for.findIncludeFor(listData.get(0), listSources, this);
                 jLHist.setListData(listData);
                 firstRun = false;
             }
@@ -146,7 +151,7 @@ public class MainWin extends BaseDialog {
                 found = true;
                 listData.insertElementAt(ld,0);
                 if( !ld.haveIncludes() ) {
-                    find_include_for.findIncludeFor(listData.get(0), listSources);
+                    find_include_for.findIncludeFor(listData.get(0), listSources, this);
                 }
                 break;                
             }
@@ -154,7 +159,7 @@ public class MainWin extends BaseDialog {
         
         if( !found ) {
             listData.insertElementAt(new ListDataContainer(data),0);
-            find_include_for.findIncludeFor(listData.get(0), listSources);
+            find_include_for.findIncludeFor(listData.get(0), listSources, this);
         }
         
         jLHist.setListData(listData);
@@ -256,12 +261,13 @@ public class MainWin extends BaseDialog {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addGap(0, 230, Short.MAX_VALUE)
-                .addComponent(jLStatus))
+                .addContainerGap(228, Short.MAX_VALUE)
+                .addComponent(jLStatus)
+                .addContainerGap())
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel2Layout.createSequentialGroup()
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
-                    .addGap(21, 21, 21)))
+                    .addGap(31, 31, 31)))
         );
 
         jTabbedPane1.addTab("Zwischenablage", jPanel2);
@@ -281,7 +287,7 @@ public class MainWin extends BaseDialog {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Verzeichnisse", jPanel1);
@@ -431,6 +437,10 @@ public class MainWin extends BaseDialog {
     void cleanQueue() {
         listData.clear();
         jLHist.setListData(listData);
+    }
+
+    public void setCurrentWorkingFile(String name) {
+        current_working_file  = name;
     }
 
 }
