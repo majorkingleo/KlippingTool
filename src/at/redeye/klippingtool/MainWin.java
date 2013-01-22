@@ -97,7 +97,7 @@ public class MainWin extends BaseDialog {
                             status_text = "Suche ... ";
                         }
                         
-                        logger.debug(status_text);
+                        logger.trace(status_text);
                         
                         if( !jLStatus.getText().equals(status_text) ) {
                             jLStatus.setText(status_text);
@@ -136,10 +136,27 @@ public class MainWin extends BaseDialog {
                 firstRun = false;
             }
             return;
+        }                
+        
+        // don't search twice if not necessary
+        boolean found = false;
+        for( ListDataContainer ld : listData )
+        {
+            if( ld.getClipData().equals(data) ) {
+                found = true;
+                listData.insertElementAt(ld,0);
+                if( !ld.haveIncludes() ) {
+                    find_include_for.findIncludeFor(listData.get(0), listSources);
+                }
+                break;                
+            }
         }
         
-        listData.insertElementAt(new ListDataContainer(data),0);
-        find_include_for.findIncludeFor(listData.get(0), listSources);
+        if( !found ) {
+            listData.insertElementAt(new ListDataContainer(data),0);
+            find_include_for.findIncludeFor(listData.get(0), listSources);
+        }
+        
         jLHist.setListData(listData);
     }
     
@@ -310,8 +327,16 @@ public class MainWin extends BaseDialog {
              cont = (ListDataContainer) jLHist.getSelectedValue();
         }
 
-        if( cont == null )
+        if( cont == null && do_popup) {
+            JPopupMenu popup = new ActionPopupClipboard(this, null);
+
+            popup.show(evt.getComponent(), evt.getX(), evt.getY());                        
             return;
+        }
+        
+        if( cont == null ) {
+            return;
+        }
 
         if (do_popup) {            
             JPopupMenu popup = new ActionPopupClipboard(this, cont);
@@ -401,6 +426,11 @@ public class MainWin extends BaseDialog {
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringSelection sel = new StringSelection(data);
         clipboard.setContents(sel, sel);
+    }
+
+    void cleanQueue() {
+        listData.clear();
+        jLHist.setListData(listData);
     }
 
 }

@@ -85,6 +85,17 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
         return data.substring(begin, ende);
     }
 
+    private static boolean is_comment_line(String line) {
+        if (line.startsWith("*")
+                || line.startsWith("+*")
+                || line.startsWith("//")
+                || line.startsWith("/*")) {
+            return true;
+        }
+
+        return false;
+    }
+    
     @Override
     public boolean fileFound(File file) {
         
@@ -99,7 +110,7 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
                     
                     String line = getWholeLine(content, idx);
                     
-                    if( line.startsWith("*") ) {
+                    if( is_comment_line(line) ) {
                         idx += cont.getClipData().length();
                         continue;
                     }

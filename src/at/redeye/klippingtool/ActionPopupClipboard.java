@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import org.apache.log4j.Logger;
 
 /**
@@ -54,26 +55,62 @@ public class ActionPopupClipboard extends JPopupMenu
         this.root = mainwin.getRoot();
         this.mainwin = mainwin;
 
+        boolean added_something = false;
+        
+        if (cont != null) {                       
+            
+            if (cont.getIncludes() != null) {
+                ArrayList<String> includes = cont.getIncludes();
+                for (int i = 0; i < includes.size() && i < 50; i++) {
+                    String include = includes.get(i);
 
-        if (cont.getIncludes() != null) 
-        {
-            ArrayList<String> includes = cont.getIncludes();
-            for ( int i = 0; i < includes.size() && i < 50; i++ ) {
-                String include = includes.get(i);
-                
-                JMenuItem menuItem = new JMenuItem(include);
+                    JMenuItem menuItem = new JMenuItem(include);
 
-                String tooltip = cont.getIncludeLine(i);
-                
-                if( !tooltip.trim().isEmpty() ) {
-                   menuItem.setToolTipText(buildHTMLTooltip(cont.getClipData(), tooltip));
+                    String tooltip = cont.getIncludeLine(i);
+
+                    if (!tooltip.trim().isEmpty()) {
+                        menuItem.setToolTipText(buildHTMLTooltip(cont.getClipData(), tooltip));
+                    }
+
+                    add(menuItem);
+
+                    menuItem.addActionListener(new ActionListenerPaste(mainwin, include));
+                    
+                    added_something = true;
                 }
-                
-                add(menuItem);
-
-                menuItem.addActionListener( new ActionListenerPaste(mainwin, include));
             }
+
+            if( added_something )
+                add(new JSeparator()); // SEPARATOR        
+
+            // clean queue
+            {
+                JMenuItem menuItem = new JMenuItem("Liste leeren");
+                add(menuItem);
+                menuItem.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        mainwin.cleanQueue();
+                    }
+                });
+            }                     
         }
+        
+        if (added_something) 
+        {
+            // about
+            
+            JMenuItem menuItem = new JMenuItem("Über");
+            add(menuItem);
+            menuItem.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    mainwin.invokeDialogUnique(new About(root));
+                }
+            });
+        }       
     }
 
 }

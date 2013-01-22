@@ -19,9 +19,7 @@ public class FindIncludeFor
     
     public FindIncludeFor()
     {
-        worker_thread  = new WorkerThread(FindIncludeFor.class.getName());
-        worker_thread.setDaemon(true);
-        worker_thread.start();
+       createWorker();
     }
     
     public void findIncludeFor( ListDataContainer cont, Vector<String> listSources )
@@ -38,7 +36,20 @@ public class FindIncludeFor
         }
     }
     
+    private void createWorker()
+    {
+        worker_thread  = new WorkerThread(FindIncludeFor.class.getName());
+        worker_thread.setDaemon(true);
+        worker_thread.start();        
+    }
+    
     public boolean isIdle() {
+        
+        if( !worker_thread.isAlive() )
+        {
+            createWorker();
+        }
+                
         worker_thread.callFinishedWork();
         return worker_thread.isIdle();
     }

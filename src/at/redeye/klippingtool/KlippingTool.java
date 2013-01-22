@@ -62,6 +62,6 @@ public class KlippingTool extends BaseModuleLauncher
 
     @Override
     public String getVersion() {
-        return "0.1";
+        return Version.getVersion();
     }
 }

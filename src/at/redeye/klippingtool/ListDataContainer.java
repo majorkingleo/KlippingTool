@@ -69,6 +69,13 @@ public class ListDataContainer implements Serializable
     public String getIncludeLine( int idx )
     {
         return include_strings_line_in_file.get(idx);
-    }    
+    }
+
+    boolean haveIncludes() {
+        if( include_strings == null )
+            return false;
+        
+        return !include_strings.isEmpty();
+    }
     
 }
