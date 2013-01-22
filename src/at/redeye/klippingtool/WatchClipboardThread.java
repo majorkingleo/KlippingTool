@@ -22,6 +22,7 @@ public class WatchClipboardThread extends Thread
 {
     private static Logger logger = Logger.getLogger(WatchClipboardThread.class);
     String lastClippingText;
+    String lastClippingSelText;
     ActionListener onClipboardChanged;    
     
     public WatchClipboardThread( ActionListener onClipboardChanged ) 
@@ -39,13 +40,14 @@ public class WatchClipboardThread extends Thread
     @Override
     public void run()
     {
-        final Clipboard systemClip = Toolkit.getDefaultToolkit().getSystemClipboard();
+        final Clipboard systemClip = Toolkit.getDefaultToolkit().getSystemClipboard();   
+        final Clipboard selClip  = Toolkit.getDefaultToolkit().getSystemSelection();
         
         do
         {
             final Transferable transfer = systemClip.getContents( null );
             try {
-                final String data = (String) transfer.getTransferData( DataFlavor.stringFlavor );
+                final String data = (String) transfer.getTransferData( DataFlavor.stringFlavor );                
                 
                 if( data != null ) 
                 {
@@ -67,6 +69,32 @@ public class WatchClipboardThread extends Thread
             } catch (    UnsupportedFlavorException | IOException ex) {
                 logger.error(ex,ex);
             }            
+                        
+            if (selClip != null) {
+                try {
+                    final Transferable transferSel = selClip.getContents(null);
+                    final String data = (String) transferSel.getTransferData(DataFlavor.stringFlavor);                    
+
+                    if (data != null) {
+                        if (lastClippingSelText == null) {
+                            lastClippingSelText = data;
+                            logger.debug("clipboard changed: " + data);
+                            onClipboardChanged.actionPerformed(new ActionEvent("clipboard", 0, data));
+
+                        } else if (!lastClippingSelText.equals(data)) {
+
+                            lastClippingSelText = data;
+
+                            logger.debug("sel clipboard changed: " + data);
+                            onClipboardChanged.actionPerformed(new ActionEvent("selclipboard", 0, data));
+                        }
+                    }
+
+
+                } catch (UnsupportedFlavorException | IOException ex) {
+                    logger.error(ex, ex);
+                }
+            }
             
             try {
                 sleep(500);
