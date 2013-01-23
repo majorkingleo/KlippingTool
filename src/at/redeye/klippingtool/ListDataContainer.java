@@ -20,6 +20,7 @@ public class ListDataContainer implements Serializable
     private String clipDataLoweCase;
     private ArrayList<String> include_strings;
     private ArrayList<String> include_strings_line_in_file;
+    private long creation_date;
     
     public ListDataContainer( String clipData )
     {
@@ -28,12 +29,16 @@ public class ListDataContainer implements Serializable
         
         if( title.length() > MAX_LENGTH )
             title = title.substring(0,MAX_LENGTH - 5) + " ... ";
+        
+        this.creation_date = System.currentTimeMillis();
     }    
     
     public ListDataContainer( String title, String clipData )
     {
         this.title = title;
         this.clipData = clipData;
+        
+        this.creation_date = System.currentTimeMillis();
     }
     
     @Override

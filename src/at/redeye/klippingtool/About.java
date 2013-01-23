@@ -22,7 +22,11 @@ public class About extends BaseDialog {
         initComponents();
         
         jLVersion.setText(MlM("Version") + " " + Version.getVersion());
-        jLTitle.setText(MlM("Über") + " " + MlM(root.getAppTitle()));
+        jLTitle.setText(MlM("Über") + " " + MlM(root.getAppTitle()));                
+    }       
+
+    public boolean openWithLastWidthAndHeight() {
+        return false;
     }
 
 

@@ -6,6 +6,7 @@
 package at.redeye.klippingtool;
 
 import at.redeye.FrameWork.base.Root;
+import at.redeye.FrameWork.base.prm.impl.gui.LocalConfig;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -98,6 +99,21 @@ public class ActionPopupClipboard extends JPopupMenu
             add(new JSeparator()); // SEPARATOR   
          }
         
+         
+    {
+            // settings
+
+            JMenuItem menuItem = new JMenuItem("Einstellungen");
+            add(menuItem);
+            menuItem.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    mainwin.invokeDialogUnique(new LocalConfig(root));                    
+                }
+            });
+        }                   
+         
         {
             // about
 

@@ -34,7 +34,7 @@ public class KlippingTool extends BaseModuleLauncher
                     "/at/redeye/FrameWork/base/resources/pictures/redeye.png");
         }                 
          
-        // AppConfigDefinitions.registerDefinitions();
+        AppConfigDefinitions.registerDefinitions();
 	FrameWorkConfigDefinitions.registerDefinitions();
         
         // this sets the default value only

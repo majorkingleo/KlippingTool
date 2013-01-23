@@ -184,6 +184,12 @@ public class MainWin extends BaseDialog implements StatusInformation {
     private void saveDB() throws IOException
     {
         try (ObjectOutputStream objOut = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(getDbName())))) {
+                                    
+            int max_data = Integer.valueOf(root.getSetup().getLocalConfig(AppConfigDefinitions.MaxNumClipHistory));
+            
+            if( listData.size() > max_data )
+                listData.setSize(max_data);
+            
             objOut.writeObject(listData);
         }
     }
