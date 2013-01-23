@@ -73,6 +73,14 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
             }
         }
         
+        if( i < 0 )
+            i = 0;
+        
+        if( ende < i ) {
+            // bis zum ende des Strings
+            return  data.substring(i);
+        }
+        
         return data.substring(i, ende);
     }    
     
