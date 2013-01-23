@@ -13,7 +13,7 @@ import java.util.ArrayList;
  */
 public class ListDataContainer implements Serializable
 {
-    private static final int MAX_LENGTH = 100;
+    private static int MAX_LENGTH = 100;
     
     private String title;    
     private String clipData;
@@ -90,6 +90,11 @@ public class ListDataContainer implements Serializable
         }
         
         return clipDataLoweCase;
+    }
+    
+    public static void setMaxTitleLength( int length )
+    {
+        MAX_LENGTH  = length;
     }
     
 }

@@ -34,8 +34,8 @@ public class KlippingTool extends BaseModuleLauncher
                     "/at/redeye/FrameWork/base/resources/pictures/redeye.png");
         }                 
          
-        AppConfigDefinitions.registerDefinitions();
-	FrameWorkConfigDefinitions.registerDefinitions();
+        AppConfigDefinitions.registerDefinitions(root);
+	FrameWorkConfigDefinitions.registerDefinitions();               
         
         // this sets the default value only
         FrameWorkConfigDefinitions.LookAndFeel.value.loadFromString("nimbus");
