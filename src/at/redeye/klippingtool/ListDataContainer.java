@@ -13,10 +13,11 @@ import java.util.ArrayList;
  */
 public class ListDataContainer implements Serializable
 {
-    private static final int MAX_LENGTH = 40;
+    private static final int MAX_LENGTH = 100;
     
     private String title;    
     private String clipData;
+    private String clipDataLoweCase;
     private ArrayList<String> include_strings;
     private ArrayList<String> include_strings_line_in_file;
     
@@ -71,11 +72,19 @@ public class ListDataContainer implements Serializable
         return include_strings_line_in_file.get(idx);
     }
 
-    boolean haveIncludes() {
+    public boolean haveIncludes() {
         if( include_strings == null )
             return false;
         
         return !include_strings.isEmpty();
+    }
+
+    public String getClipDataLowerCase() {
+        if( clipDataLoweCase == null ) {
+            clipDataLoweCase = clipData.toLowerCase();
+        }
+        
+        return clipDataLoweCase;
     }
     
 }
