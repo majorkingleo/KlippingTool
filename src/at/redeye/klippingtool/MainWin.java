@@ -8,6 +8,7 @@ import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.BaseDialog;
 import at.redeye.FrameWork.base.Root;
 import at.redeye.FrameWork.base.Setup;
+import at.redeye.FrameWork.utilities.StringUtils;
 import at.redeye.klippingtool.findinclude.FindIncludeFor;
 import java.awt.ComponentOrientation;
 import java.awt.Toolkit;
@@ -21,6 +22,7 @@ import java.awt.event.MouseEvent;
 import java.io.*;
 import java.util.TimerTask;
 import java.util.Vector;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 /**
@@ -29,6 +31,9 @@ import javax.swing.JPopupMenu;
  */
 public class MainWin extends BaseDialog implements StatusInformation {
 
+    private String MESSAGE_CLEAR_QUEUE;
+    private String MESSAGE_CLEAR_QUEUE_TITLE;
+    
     Vector<ListDataContainer> listData;
     boolean firstRun = true;
     WatchClipboardThread clipping_thread;
@@ -117,6 +122,9 @@ public class MainWin extends BaseDialog implements StatusInformation {
         // Suchmodus
         
         initSearchPanel();
+        
+        MESSAGE_CLEAR_QUEUE = MlM("Soll die Liste tatsächlich geleert werden?");
+        MESSAGE_CLEAR_QUEUE_TITLE = MlM("Liste Leeren");
     } 
 
     private void loadDb() throws IOException, ClassNotFoundException
@@ -492,6 +500,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
         jLHist.setListData(listData);
     }
 
+    @Override
     public void setCurrentWorkingFile(String name) {
         current_working_file  = name;
     }
@@ -500,9 +509,12 @@ public class MainWin extends BaseDialog implements StatusInformation {
     {
         jSearch.addKeyListener(new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent e) {}
+            @Override
             public void keyPressed(KeyEvent e) {}
             
+            @Override
             public void keyReleased(KeyEvent e) {
                             
                 if( e.getKeyCode() == KeyEvent.VK_ESCAPE )
@@ -527,18 +539,19 @@ public class MainWin extends BaseDialog implements StatusInformation {
         
         jLHist.addKeyListener(new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent e) {}
                 
+            @Override
             public void keyPressed(KeyEvent e) {}
 
+            @Override
             public void keyReleased(KeyEvent e) {
                 if( e.getKeyCode() == KeyEvent.VK_ESCAPE )
                 {
                     close();
-                    return;
                 } else if(  e.getKeyCode() == KeyEvent.VK_ENTER ) {                    
                     jLHistMousePressed(null);
-                    return;
                 } else if( e.getKeyCode() == KeyEvent.VK_BACK_SPACE ) {
                     jLHist.setSelectedIndex(-1);
                     
@@ -547,7 +560,6 @@ public class MainWin extends BaseDialog implements StatusInformation {
                     jSearch.setText(new_string);
                     jSearch.requestFocus();    
                     search_for(new_string.toLowerCase());
-                    return;
                 }
                 
             }
@@ -566,6 +578,21 @@ public class MainWin extends BaseDialog implements StatusInformation {
         }
         
         jLHist.setListData(search_cont);
+    }
+
+    void cleanQueueAndMayAsk() 
+    {
+        if( !StringUtils.isYes(root.getSetup().getLocalConfig(AppConfigDefinitions.RequestBeforeCleaningQueue)) )
+        {
+            cleanQueue();
+            return;
+        } 
+        
+        if( JOptionPane.showConfirmDialog(rootPane, MESSAGE_CLEAR_QUEUE,
+                MESSAGE_CLEAR_QUEUE_TITLE, JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION )
+        {
+            cleanQueue();
+        }
     }
 
 }

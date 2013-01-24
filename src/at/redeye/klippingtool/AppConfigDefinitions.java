@@ -58,13 +58,16 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
             new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_LONG));    
     public static DBConfig MaxLineWidth = new DBConfig("MaxLineWidth","100","Anzahl der Zeichen die in der Liste dargestellt werden.", 
             new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_LONG));     
-   
+    public static DBConfig RequestBeforeCleaningQueue = new DBConfig("RequestBeforeCleaningQueue","true","Nachfragen, bevor die Liste gelelöscht wird", 
+            new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_TRUE_FALSE));    
+    
     public static void registerDefinitions(Root root) {
 
         BaseRegisterDefinitions();
 
         addLocal(MaxNumClipHistory);
         addLocal(MaxLineWidth);
+        addLocal(RequestBeforeCleaningQueue);
         
         new UpdateListener( root, MaxLineWidth, new UpdateListenerLoadChangesFromString() {
 
@@ -72,6 +75,6 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
             public void doUpdate(String value) {
                 ListDataContainer.setMaxTitleLength(Integer.valueOf(value));                
             }
-        });        
+        });                  
     }            
 }

@@ -25,6 +25,7 @@ public class About extends BaseDialog {
         jLTitle.setText(MlM("Über") + " " + MlM(root.getAppTitle()));                
     }       
 
+    @Override
     public boolean openWithLastWidthAndHeight() {
         return false;
     }

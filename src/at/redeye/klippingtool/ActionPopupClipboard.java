@@ -89,7 +89,7 @@ public class ActionPopupClipboard extends JPopupMenu
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        mainwin.cleanQueue();
+                        mainwin.cleanQueueAndMayAsk();
                     }
                 });
             }                     
