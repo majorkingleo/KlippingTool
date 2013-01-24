@@ -6,6 +6,7 @@ package at.redeye.klippingtool;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  *
@@ -49,6 +50,12 @@ public class ListDataContainer implements Serializable
     @Override
     public String toString()
     {
+        /*
+        if( charma_counter > 0 ) {
+            return String.format("(%d) <b>%s</b> %s", charma_counter, title, new Date(creation_date).toString());
+        }
+        return String.format("<b>%s</b> %s", title, new Date(creation_date).toString());        
+        */
         return title;
     }
 
