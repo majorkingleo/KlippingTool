@@ -21,6 +21,7 @@ public class ListDataContainer implements Serializable
     private ArrayList<String> include_strings;
     private ArrayList<String> include_strings_line_in_file;
     private long creation_date;
+    private int charma_counter;
     
     public ListDataContainer( String clipData )
     {
@@ -31,6 +32,8 @@ public class ListDataContainer implements Serializable
             title = title.substring(0,MAX_LENGTH - 5) + " ... ";
         
         this.creation_date = System.currentTimeMillis();
+        
+        charma_counter = 0;
     }    
     
     public ListDataContainer( String title, String clipData )
@@ -39,6 +42,8 @@ public class ListDataContainer implements Serializable
         this.clipData = clipData;
         
         this.creation_date = System.currentTimeMillis();
+        
+        charma_counter = 0;
     }
     
     @Override
@@ -95,6 +100,14 @@ public class ListDataContainer implements Serializable
     public static void setMaxTitleLength( int length )
     {
         MAX_LENGTH  = length;
+    }
+    
+    public void incCharma() {
+        charma_counter++;
+    }
+    
+    public int getCharma() {
+        return charma_counter;
     }
     
 }

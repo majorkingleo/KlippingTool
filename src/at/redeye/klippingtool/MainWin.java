@@ -20,6 +20,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.io.*;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.TimerTask;
 import java.util.Vector;
 import javax.swing.JOptionPane;
@@ -155,15 +157,18 @@ public class MainWin extends BaseDialog implements StatusInformation {
                 firstRun = false;
             }
             return;
-        }                
+        }
         
         // don't search twice if not necessary
         boolean found = false;
-        for( ListDataContainer ld : listData )
+        for( int i = 0; i <  listData.size(); i++ )
         {
+            ListDataContainer ld = listData.get(i);
+            
             if( ld.getClipData().equals(data) ) {
-                found = true;
-                listData.insertElementAt(ld,0);
+                found = true;                
+                listData.removeElementAt(i);
+                listData.insertElementAt(ld,0);                
                 if( !ld.haveIncludes() ) {
                     find_include_for.findIncludeFor(listData.get(0), listSources, this);
                 }
@@ -397,14 +402,15 @@ public class MainWin extends BaseDialog implements StatusInformation {
             JPopupMenu popup = new ActionPopupClipboard(this, cont);
 
             popup.show(evt.getComponent(), evt.getX(), evt.getY());                        
-            return;
+            // return;
         } else {
 
              clipping_thread.setLastClippingText(cont.getClipData());
              Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
              StringSelection sel = new StringSelection(cont.getClipData());
              clipboard.setContents(sel, sel);
-            
+             cont.incCharma();
+             
         } // else        
     }//GEN-LAST:event_jLHistMousePressed
 
@@ -439,7 +445,6 @@ public class MainWin extends BaseDialog implements StatusInformation {
             JPopupMenu popup = new ActionPopupSources(this, name);
 
             popup.show(evt.getComponent(), evt.getX(), evt.getY());                        
-            return;
         }    
     }//GEN-LAST:event_jLSourcesMousePressed
 
@@ -576,6 +581,19 @@ public class MainWin extends BaseDialog implements StatusInformation {
                 search_cont.add(cont);
             }
         }
+        
+        Collections.sort(listData, new Comparator<ListDataContainer>() {
+
+            @Override
+            public int compare(ListDataContainer o1, ListDataContainer o2) {
+                if( o1.getCharma() > o2.getCharma() )
+                    return -1;
+                else if( o1.getCharma() < o2.getCharma() )
+                    return 1;
+                else
+                    return 0;
+            }
+        });
         
         jLHist.setListData(search_cont);
     }
