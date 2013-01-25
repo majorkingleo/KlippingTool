@@ -60,6 +60,9 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
             new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_LONG));     
     public static DBConfig RequestBeforeCleaningQueue = new DBConfig("RequestBeforeCleaningQueue","true","Nachfragen, bevor die Liste gelelöscht wird", 
             new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_TRUE_FALSE));    
+    public static DBConfig NiceHtmlList = new DBConfig("NiceHtmlList","true","Hübsch formartierte Liste.", 
+            new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_TRUE_FALSE));   
+    public static DBConfig NiceHtmlListInfoTextColor = new DBConfig("NiceHtmlListInfoTextColor","dddddd","Farbe für die nebensächlichen Informationen, wie Datum und beliebtheit.");
     
     public static void registerDefinitions(Root root) {
 
@@ -68,6 +71,8 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         addLocal(MaxNumClipHistory);
         addLocal(MaxLineWidth);
         addLocal(RequestBeforeCleaningQueue);
+        addLocal(NiceHtmlList);
+        addLocal(NiceHtmlListInfoTextColor);
         
         new UpdateListener( root, MaxLineWidth, new UpdateListenerLoadChangesFromString() {
 

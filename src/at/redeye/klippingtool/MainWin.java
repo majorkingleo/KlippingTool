@@ -4,26 +4,21 @@
  */
 package at.redeye.klippingtool;
 
-import at.redeye.FrameWork.base.AutoMBox;
-import at.redeye.FrameWork.base.BaseDialog;
-import at.redeye.FrameWork.base.Root;
-import at.redeye.FrameWork.base.Setup;
+import at.redeye.FrameWork.base.*;
 import at.redeye.FrameWork.utilities.StringUtils;
 import at.redeye.klippingtool.findinclude.FindIncludeFor;
-import java.awt.ComponentOrientation;
+import at.redeye.klippingtool.nicehtmlist.ComponentCellRenderer;
+import at.redeye.klippingtool.nicehtmlist.HtmlListFactory;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.TimerTask;
 import java.util.Vector;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
@@ -35,61 +30,62 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
     private String MESSAGE_CLEAR_QUEUE;
     private String MESSAGE_CLEAR_QUEUE_TITLE;
-    
     Vector<ListDataContainer> listData;
     boolean firstRun = true;
     WatchClipboardThread clipping_thread;
     String last_path;
     Vector<String> listSources;
     FindIncludeFor find_include_for;
-    String current_working_file;         
-    
+    String current_working_file;
+    boolean nice_html_list = false;
+    HtmlListFactory html_list_factory;
+
     /**
      * Creates new form MainWin
      */
-    public MainWin( Root root) {
-        super( root, root.getAppTitle() );
-        
+    public MainWin(Root root) {
+        super(root, root.getAppTitle());
+
         initComponents();
-        
+
         try {
             loadDb();
-        } catch( Exception ex ) {
-            logger.error(ex,ex);
-        }        
-        
-        
+        } catch (Exception ex) {
+            logger.error(ex, ex);
+        }
+
+
         try {
             loadDbSources();
-            if( listSources != null ) {
+            if (listSources != null) {
                 jLSources.setListData(listSources);
             }
-        } catch( Exception ex ) {
-            logger.error(ex,ex);
-        }            
-        
+        } catch (Exception ex) {
+            logger.error(ex, ex);
+        }
+
         clipping_thread = new WatchClipboardThread(new ActionListener() {
 
             @Override
             public void actionPerformed(final ActionEvent e) {
-                java.awt.EventQueue.invokeLater(new Runnable()
-                {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+
                     @Override
                     public void run() {
                         String data = e.getActionCommand();
-                        appendClipData( data );
-                    }                    
+                        appendClipData(data);
+                    }
                 });
             }
         });
-        
+
         clipping_thread.setDaemon(true);
-        clipping_thread.start();   
-        
-        last_path = root.getSetup().getLocalConfig("LastPath","");
-        
+        clipping_thread.start();
+
+        last_path = root.getSetup().getLocalConfig("LastPath", "");
+
         find_include_for = new FindIncludeFor();
-        
+
         getAutoRefreshTimer().schedule(new TimerTask() {
 
             @Override
@@ -98,155 +94,178 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
                     @Override
                     public void run() {
-                        
-                        String status_text = null;                                                
-                        
-                        if( find_include_for.isIdle() ) {
+
+                        String status_text = null;
+
+                        if (find_include_for.isIdle()) {
                             status_text = "Warte auf Arbeit ... ";
                         } else {
                             status_text = "Suche ... ";
-                            
-                            if( current_working_file != null ) {
+
+                            if (current_working_file != null) {
                                 status_text += current_working_file;
                             }
                         }
-                        
+
                         logger.trace(status_text);
-                        
-                        if( !jLStatus.getText().equals(status_text) ) {
+
+                        if (!jLStatus.getText().equals(status_text)) {
                             jLStatus.setText(status_text);
                         }
                     }
-                });                        
+                });
             }
         }, 1000, 500);
-        
+
         // Suchmodus
-        
+
         initSearchPanel();
-        
+
         MESSAGE_CLEAR_QUEUE = MlM("Soll die Liste tatsächlich geleert werden?");
         MESSAGE_CLEAR_QUEUE_TITLE = MlM("Liste Leeren");
-    } 
 
-    private void loadDb() throws IOException, ClassNotFoundException
-    {
-        ObjectInputStream objIn = new ObjectInputStream(new BufferedInputStream(new FileInputStream(getDbName())));
-            
-        listData = (Vector<ListDataContainer>) objIn.readObject();
-    }          
 
-    private void loadDbSources() throws IOException, ClassNotFoundException
-    {
-        ObjectInputStream objIn = new ObjectInputStream(new BufferedInputStream(new FileInputStream(getDbSourcesName())));
-            
-        listSources = (Vector<String>) objIn.readObject();
-    }     
-    
-    private void appendClipData( String data )
-    {
-        if( listData == null ) {
-             listData = new Vector();
-        }
-        
-        // ignore double entries
-        if( listData.size() > 0 && listData.get(0).getClipData().equals(data) ) {
-            if( firstRun ) {
-                find_include_for.findIncludeFor(listData.get(0), listSources, this);
-                jLHist.setListData(listData);
-                firstRun = false;
+        new AppConfigDefinitions.UpdateListener(root, AppConfigDefinitions.NiceHtmlList, new AppConfigDefinitions.UpdateListenerLoadChangesFromString() {
+
+            @Override
+            public void doUpdate(String value) {
+                nice_html_list = StringUtils.isYes(value);
+                changeHistListStyle();
             }
-            return;
-        }
+        });
         
-        // don't search twice if not necessary
-        boolean found = false;
-        for( int i = 0; i <  listData.size(); i++ )
-        {
-            ListDataContainer ld = listData.get(i);
-            
-            if( ld.getClipData().equals(data) ) {
-                found = true;                
-                listData.removeElementAt(i);
-                listData.insertElementAt(ld,0);                
-                if( !ld.haveIncludes() ) {
-                    find_include_for.findIncludeFor(listData.get(0), listSources, this);
-                }
-                break;                
+        new AppConfigDefinitions.UpdateListener(root, BaseAppConfigDefinitions.DateFormat, new AppConfigDefinitions.UpdateListenerLoadChangesFromString() {
+
+            @Override
+            public void doUpdate(String value) {                
+                changeHistListStyle();
             }
-        }
+        });       
         
-        if( !found ) {
-            listData.insertElementAt(new ListDataContainer(data),0);
-            find_include_for.findIncludeFor(listData.get(0), listSources, this);
-        }
         
-        jLHist.setListData(listData);
+        new AppConfigDefinitions.UpdateListener(root,  AppConfigDefinitions.NiceHtmlListInfoTextColor, new AppConfigDefinitions.UpdateListenerLoadChangesFromString() {
+
+            @Override
+            public void doUpdate(String value) {    
+                if( html_list_factory != null )
+                    html_list_factory.setListInfoTextColor(value);
+                changeHistListStyle();
+            }
+        });            
     }
-    
-    String getDbName()
-    {
-        return Setup.getAppConfigFile(root.getAppName(), "cliphist.ser");
-    }    
 
-    String getDbSourcesName()
-    {
+    private void loadDb() throws IOException, ClassNotFoundException {
+        ObjectInputStream objIn = new ObjectInputStream(new BufferedInputStream(new FileInputStream(getDbName())));
+
+        listData = (Vector<ListDataContainer>) objIn.readObject();
+    }
+
+    private void loadDbSources() throws IOException, ClassNotFoundException {
+        ObjectInputStream objIn = new ObjectInputStream(new BufferedInputStream(new FileInputStream(getDbSourcesName())));
+
+        listSources = (Vector<String>) objIn.readObject();
+    }
+
+    private void appendClipData(String data) {
+        if (listData == null) {
+            listData = new Vector();
+        }
+
+        synchronized (listData) {
+
+            // ignore double entries
+            if (listData.size() > 0 && listData.get(0).getClipData().equals(data)) {
+                if (firstRun) {
+                    find_include_for.findIncludeFor(listData.get(0), listSources, this);
+                    setHistListData(listData);
+                    firstRun = false;
+                    listData.get(0).updateUsageDate();
+                }
+                return;
+            }
+
+            // don't search twice if not necessary
+            boolean found = false;
+            for (int i = 0; i < listData.size(); i++) {
+                ListDataContainer ld = listData.get(i);
+
+                if (ld.getClipData().equals(data)) {
+                    found = true;
+                    listData.removeElementAt(i);
+                    listData.insertElementAt(ld, 0);
+                    ld.updateUsageDate();
+                    if (!ld.haveIncludes()) {
+                        find_include_for.findIncludeFor(listData.get(0), listSources, this);
+                    }
+                    break;
+                }
+            }
+
+            if (!found) {
+                listData.insertElementAt(new ListDataContainer(data), 0);
+                find_include_for.findIncludeFor(listData.get(0), listSources, this);
+                listData.get(0).updateUsageDate();
+            }
+        }
+        setHistListData(listData);
+    }
+
+    String getDbName() {
+        return Setup.getAppConfigFile(root.getAppName(), "cliphist.ser");
+    }
+
+    String getDbSourcesName() {
         return Setup.getAppConfigFile(root.getAppName(), "sources.ser");
-    }    
-    
-    private void saveDB() throws IOException
-    {
+    }
+
+    private void saveDB() throws IOException {
         try (ObjectOutputStream objOut = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(getDbName())))) {
-                                    
+
             int max_data = Integer.valueOf(root.getSetup().getLocalConfig(AppConfigDefinitions.MaxNumClipHistory));
-            
-            if( listData.size() > max_data )
+
+            if (listData.size() > max_data) {
                 listData.setSize(max_data);
-            
+            }
+
             objOut.writeObject(listData);
         }
     }
-    
-    private void saveDBSources() throws IOException
-    {
+
+    private void saveDBSources() throws IOException {
         try (ObjectOutputStream objOut = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(getDbSourcesName())))) {
             objOut.writeObject(listSources);
         }
-    }    
-    
+    }
+
     @Override
-    public void close()
-    {
+    public void close() {
         setVisible(false);
-        
+
         root.getSetup().setLocalConfig("LastPath", last_path);
-        
+
         try {
             saveDB();
-        } catch( IOException ex ) {
-            logger.error(ex,ex);
+        } catch (IOException ex) {
+            logger.error(ex, ex);
         }
-        
+
         try {
             saveDBSources();
-        } catch( IOException ex ) {
-            logger.error(ex,ex);
+        } catch (IOException ex) {
+            logger.error(ex, ex);
         }
-        
+
         super.close();
     }
-    
-    public String getLastOpenPath()
-    {
+
+    public String getLastOpenPath() {
         return last_path;
     }
 
-    public void setLastOpenPath(String path)
-    {
+    public void setLastOpenPath(String path) {
         last_path = path;
-    }    
-            
-    
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -358,25 +377,35 @@ public class MainWin extends BaseDialog implements StatusInformation {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLHistMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLHistMousePressed
-        
+
         System.out.println("pressed");
 
-        ListDataContainer cont = (ListDataContainer) jLHist.getSelectedValue();
+        Object obj = jLHist.getSelectedValue();
+                
+        ListDataContainer cont = null;
+        
+        if( obj instanceof ListDataContainer ) {
+            cont = (ListDataContainer) obj;
+        } else {
+            cont = HtmlListFactory.getContainer(obj);
+        }
+            
 
         boolean do_popup = false;
-        
-        if ( evt != null )
-            do_popup = evt.isPopupTrigger();
 
-        if( !do_popup && Setup.is_win_system() )
-        {
-            if( evt.getButton() == MouseEvent.BUTTON3 )
+        if (evt != null) {
+            do_popup = evt.isPopupTrigger();
+        }
+
+        if (!do_popup && Setup.is_win_system()) {
+            if (evt.getButton() == MouseEvent.BUTTON3) {
                 do_popup = true;
+            }
         }
 
 
-        if ( do_popup ) {
-             System.out.println("popup trigger");
+        if (do_popup) {
+            System.out.println("popup trigger");
 
             int idx = jLHist.locationToIndex(evt.getPoint());
 
@@ -384,52 +413,56 @@ public class MainWin extends BaseDialog implements StatusInformation {
                 jLHist.setSelectedIndex(idx);
             }
 
-             cont = (ListDataContainer) jLHist.getSelectedValue();
+            if (obj instanceof ListDataContainer) {
+                cont = (ListDataContainer) obj;
+            } else {
+                cont = HtmlListFactory.getContainer(obj);
+            }
         }
 
-        if( cont == null && do_popup) {
+        if (cont == null && do_popup) {
             JPopupMenu popup = new ActionPopupClipboard(this, null);
 
-            popup.show(evt.getComponent(), evt.getX(), evt.getY());                        
-            return;
-        }
-        
-        if( cont == null ) {
+            popup.show(evt.getComponent(), evt.getX(), evt.getY());
             return;
         }
 
-        if (do_popup) {            
+        if (cont == null) {
+            return;
+        }
+
+        if (do_popup) {
             JPopupMenu popup = new ActionPopupClipboard(this, cont);
 
-            popup.show(evt.getComponent(), evt.getX(), evt.getY());                        
+            popup.show(evt.getComponent(), evt.getX(), evt.getY());
             // return;
         } else {
 
-             clipping_thread.setLastClippingText(cont.getClipData());
-             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-             StringSelection sel = new StringSelection(cont.getClipData());
-             clipboard.setContents(sel, sel);
-             cont.incCharma();
-             
+            clipping_thread.setLastClippingText(cont.getClipData());
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            StringSelection sel = new StringSelection(cont.getClipData());
+            clipboard.setContents(sel, sel);
+            cont.incCharma();
+
         } // else        
     }//GEN-LAST:event_jLHistMousePressed
 
     private void jLSourcesMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLSourcesMousePressed
-       System.out.println("pressed");
+        System.out.println("pressed");
 
         String name = (String) jLSources.getSelectedValue();
 
         boolean do_popup = evt.isPopupTrigger();
 
-        if( !do_popup && Setup.is_win_system() )
-        {
-            if( evt.getButton() == MouseEvent.BUTTON3 )
+        if (!do_popup && Setup.is_win_system()) {
+            if (evt.getButton() == MouseEvent.BUTTON3) {
                 do_popup = true;
+            }
         }
 
 
-        if ( do_popup ) {
-             System.out.println("popup trigger");
+        if (do_popup) {
+            System.out.println("popup trigger");
 
             int idx = jLHist.locationToIndex(evt.getPoint());
 
@@ -437,25 +470,24 @@ public class MainWin extends BaseDialog implements StatusInformation {
                 jLHist.setSelectedIndex(idx);
             }
 
-             name = (String) jLSources.getSelectedValue();
+            name = (String) jLSources.getSelectedValue();
         }
 
         if (do_popup) {
-            
+
             JPopupMenu popup = new ActionPopupSources(this, name);
 
-            popup.show(evt.getComponent(), evt.getX(), evt.getY());                        
-        }    
+            popup.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
     }//GEN-LAST:event_jLSourcesMousePressed
 
     private void jBCleanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBCleanActionPerformed
 
         jSearch.setText("");
         jSearch.requestFocus();
-        jLHist.setListData(listData);
+        setHistListData(listData);
 
 	}//GEN-LAST:event_jBCleanActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBClean;
     private javax.swing.JList jLHist;
@@ -472,10 +504,10 @@ public class MainWin extends BaseDialog implements StatusInformation {
     // End of variables declaration//GEN-END:variables
 
     void addSourceDirectory(final File target_dir) {
-        if( listSources == null ) {
+        if (listSources == null) {
             listSources = new Vector<String>();
         }
-        
+
         new AutoMBox(MainWin.class.getName()) {
 
             @Override
@@ -484,11 +516,10 @@ public class MainWin extends BaseDialog implements StatusInformation {
                 jLSources.setListData(listSources);
 
             }
-        };        
+        };
     }
-    
-    void removeSourcesDirectory( String name )
-    {
+
+    void removeSourcesDirectory(String name) {
         listSources.remove(name);
         jLSources.setListData(listSources);
     }
@@ -502,115 +533,146 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
     void cleanQueue() {
         listData.clear();
-        jLHist.setListData(listData);
+        setHistListData(listData);
     }
 
     @Override
     public void setCurrentWorkingFile(String name) {
-        current_working_file  = name;
+        current_working_file = name;
     }
-    
-    private void initSearchPanel()
-    {
+
+    private void initSearchPanel() {
         jSearch.addKeyListener(new KeyListener() {
 
             @Override
-            public void keyTyped(KeyEvent e) {}
+            public void keyTyped(KeyEvent e) {
+            }
+
             @Override
-            public void keyPressed(KeyEvent e) {}
-            
+            public void keyPressed(KeyEvent e) {
+            }
+
             @Override
             public void keyReleased(KeyEvent e) {
-                            
-                if( e.getKeyCode() == KeyEvent.VK_ESCAPE )
-                {
+
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     close();
                     return;
-                } else if( e.getKeyCode() == KeyEvent.VK_DOWN ||
-                           e.getKeyCode() == KeyEvent.VK_KP_DOWN )
-                {                    
+                } else if (e.getKeyCode() == KeyEvent.VK_DOWN
+                        || e.getKeyCode() == KeyEvent.VK_KP_DOWN) {
                     jLHist.requestFocus();
                     jLHist.setSelectedIndex(0);
                     return;
                 }
-                
+
                 String search_string = jSearch.getText();
 
                 System.out.println(search_string);
-                
+
                 search_for(search_string.toLowerCase());
-            }                        
+            }
         });
-        
+
         jLHist.addKeyListener(new KeyListener() {
 
             @Override
-            public void keyTyped(KeyEvent e) {}
-                
+            public void keyTyped(KeyEvent e) {
+            }
+
             @Override
-            public void keyPressed(KeyEvent e) {}
+            public void keyPressed(KeyEvent e) {
+            }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if( e.getKeyCode() == KeyEvent.VK_ESCAPE )
-                {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     close();
-                } else if(  e.getKeyCode() == KeyEvent.VK_ENTER ) {                    
+                } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     jLHistMousePressed(null);
-                } else if( e.getKeyCode() == KeyEvent.VK_BACK_SPACE ) {
+                } else if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
                     jLHist.setSelectedIndex(-1);
-                    
+
                     String new_string = jSearch.getText();
-                    new_string = new_string.substring(0,new_string.length()-1);
+                    new_string = new_string.substring(0, new_string.length() - 1);
                     jSearch.setText(new_string);
-                    jSearch.requestFocus();    
+                    jSearch.requestFocus();
                     search_for(new_string.toLowerCase());
                 }
-                
+
             }
-        });            
+        });
     }
-    
-    private void search_for( String search )
-    {
+
+    private void search_for(String search) {
         Vector<ListDataContainer> search_cont = new Vector();
-        
-        for( ListDataContainer cont : listData )
-        {
-            if( cont.getClipDataLowerCase().contains(search) ) {
+
+        for (ListDataContainer cont : listData) {
+            if (cont.getClipDataLowerCase().contains(search)) {
                 search_cont.add(cont);
             }
         }
-        
+
         Collections.sort(listData, new Comparator<ListDataContainer>() {
 
             @Override
             public int compare(ListDataContainer o1, ListDataContainer o2) {
-                if( o1.getCharma() > o2.getCharma() )
+                if (o1.getCharma() > o2.getCharma()) {
                     return -1;
-                else if( o1.getCharma() < o2.getCharma() )
+                } else if (o1.getCharma() < o2.getCharma()) {
                     return 1;
-                else
+                } else {
                     return 0;
+                }
             }
         });
-        
-        jLHist.setListData(search_cont);
+
+        setHistListData(search_cont);
     }
 
-    void cleanQueueAndMayAsk() 
-    {
-        if( !StringUtils.isYes(root.getSetup().getLocalConfig(AppConfigDefinitions.RequestBeforeCleaningQueue)) )
-        {
+    void cleanQueueAndMayAsk() {
+        if (!StringUtils.isYes(root.getSetup().getLocalConfig(AppConfigDefinitions.RequestBeforeCleaningQueue))) {
             cleanQueue();
             return;
-        } 
-        
-        if( JOptionPane.showConfirmDialog(rootPane, MESSAGE_CLEAR_QUEUE,
-                MESSAGE_CLEAR_QUEUE_TITLE, JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION )
-        {
+        }
+
+        if (JOptionPane.showConfirmDialog(rootPane, MESSAGE_CLEAR_QUEUE,
+                MESSAGE_CLEAR_QUEUE_TITLE, JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             cleanQueue();
         }
     }
 
+    void changeHistListStyle() {
+        if (nice_html_list) {
+            if( html_list_factory == null ) {
+                html_list_factory = new HtmlListFactory(root);
+            }
+            
+            jLHist.setCellRenderer(new ComponentCellRenderer());
+        } else {
+            
+            if( html_list_factory != null ) {
+                html_list_factory.dispose();
+                html_list_factory = null;
+            }
+                    
+            jLHist.setCellRenderer(new DefaultListCellRenderer());
+        }
+        
+        setHistListData(listData);
+    }
+
+    void setHistListData(Vector<ListDataContainer> list) {
+        
+        if( list == null )
+            return;
+                
+        synchronized (list) {
+            if (!nice_html_list) {
+                jLHist.setListData(list);
+                return;
+            }            
+            
+            jLHist.setListData(html_list_factory.createLabels(list));
+        }
+    }
 }
