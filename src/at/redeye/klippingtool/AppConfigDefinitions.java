@@ -54,6 +54,14 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         }        
     }
     
+    static class PrmAnyCheck implements PrmDefaultChecksInterface
+    {
+        @Override
+        public boolean doChecks(PrmActionEvent event) {
+            return true;
+        }        
+    }
+    
     public static DBConfig MaxNumClipHistory = new DBConfig("MaxNumClipHistory","10000","Maximale Anzahl an Datensätze die geispeichert werden soll", 
             new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_LONG));    
     public static DBConfig MaxLineWidth = new DBConfig("MaxLineWidth","100","Anzahl der Zeichen die in der Liste dargestellt werden.", 
@@ -62,7 +70,8 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
             new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_TRUE_FALSE));    
     public static DBConfig NiceHtmlList = new DBConfig("NiceHtmlList","true","Hübsch formartierte Liste.", 
             new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_TRUE_FALSE));   
-    public static DBConfig NiceHtmlListInfoTextColor = new DBConfig("NiceHtmlListInfoTextColor","dddddd","Farbe für die nebensächlichen Informationen, wie Datum und beliebtheit.");
+    public static DBConfig NiceHtmlListInfoTextColor = new DBConfig("NiceHtmlListInfoTextColor","#cccccc","Farbe für die nebensächlichen Informationen, wie Datum und beliebtheit.",
+            new PrmAnyCheck());
     
     public static void registerDefinitions(Root root) {
 

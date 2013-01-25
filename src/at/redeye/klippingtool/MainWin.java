@@ -32,6 +32,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
     private String MESSAGE_CLEAR_QUEUE_TITLE;
     Vector<ListDataContainer> listData;
     boolean firstRun = true;
+    boolean changeStyle = false;
     WatchClipboardThread clipping_thread;
     String last_path;
     Vector<String> listSources;
@@ -130,7 +131,9 @@ public class MainWin extends BaseDialog implements StatusInformation {
             @Override
             public void doUpdate(String value) {
                 nice_html_list = StringUtils.isYes(value);
-                changeHistListStyle();
+                
+                if( changeStyle )
+                    changeHistListStyle();
             }
         });
         
@@ -138,7 +141,8 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
             @Override
             public void doUpdate(String value) {                
-                changeHistListStyle();
+                if( changeStyle )
+                    changeHistListStyle();
             }
         });       
         
@@ -149,9 +153,14 @@ public class MainWin extends BaseDialog implements StatusInformation {
             public void doUpdate(String value) {    
                 if( html_list_factory != null )
                     html_list_factory.setListInfoTextColor(value);
-                changeHistListStyle();
+                
+                if( changeStyle )
+                    changeHistListStyle();
             }
         });            
+        
+        changeHistListStyle();       
+        changeStyle = true;
     }
 
     private void loadDb() throws IOException, ClassNotFoundException {
@@ -667,7 +676,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
             return;
                 
         synchronized (list) {
-            if (!nice_html_list) {
+            if (!nice_html_list || html_list_factory == null ) {
                 jLHist.setListData(list);
                 return;
             }            
