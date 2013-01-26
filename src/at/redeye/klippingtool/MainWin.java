@@ -167,6 +167,16 @@ public class MainWin extends BaseDialog implements StatusInformation {
         ObjectInputStream objIn = new ObjectInputStream(new BufferedInputStream(new FileInputStream(getDbName())));
 
         listData = (Vector<ListDataContainer>) objIn.readObject();
+        
+        /*
+        // create testdata
+        for( int i = 0; i < 1000; i++ )
+        {
+            listData.add(new ListDataContainer(String.format("text%04d", i)));
+        }
+        * 
+        */
+        
     }
 
     private void loadDbSources() throws IOException, ClassNotFoundException {
@@ -542,6 +552,10 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
     void cleanQueue() {
         listData.clear();
+        
+        if( html_list_factory != null )
+            html_list_factory.cleanQueue();
+        
         setHistListData(listData);
     }
 

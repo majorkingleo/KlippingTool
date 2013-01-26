@@ -11,6 +11,7 @@ import at.redeye.klippingtool.ListDataContainer;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Vector;
 import javax.swing.JLabel;
 import org.apache.log4j.Logger;
@@ -42,6 +43,7 @@ public class HtmlListFactory
     
     SimpleDateFormat sdf;
     String inactiveColor;
+    HashMap<ListDataContainer,MyLabel> label_cache;
     
     public HtmlListFactory( Root root )
     {
@@ -52,6 +54,8 @@ public class HtmlListFactory
         }
         
         inactiveColor = root.getSetup().getLocalConfig(AppConfigDefinitions.NiceHtmlListInfoTextColor);
+        
+        label_cache = new HashMap<>();
     }
 
     public MyLabel createLabel( ListDataContainer cont )
@@ -59,7 +63,7 @@ public class HtmlListFactory
         return createLabel(cont, null);
     }
     
-    public MyLabel createLabel( ListDataContainer cont, SimpleDateFormat sdf )
+    private String getText4Label(  ListDataContainer cont )
     {
         StringBuilder sb = new StringBuilder("<html><body>");
         
@@ -84,7 +88,12 @@ public class HtmlListFactory
         
         sb.append("</body></html>");
         
-        MyLabel label = new MyLabel(cont, sb.toString());
+        return sb.toString();
+    }
+    
+    public MyLabel createLabel( ListDataContainer cont, SimpleDateFormat sdf )
+    {                
+        MyLabel label = new MyLabel(cont, getText4Label(cont));
         label.setOpaque(true);
         label.setVisible(true);
         return label;
@@ -95,8 +104,21 @@ public class HtmlListFactory
         Vector<MyLabel> labels = new Vector();
         
         for( ListDataContainer cont : list ) {
-            MyLabel label = createLabel(cont, sdf);
+            
+            MyLabel label = label_cache.get(cont);
+            
+            if( label != null ) {
+                
+                String text = getText4Label(cont);
+                if( !text.equals(label.getText()) )
+                    label.setText(text);
+
+            } else {
+                label = createLabel(cont, sdf);
+            }
+            
             labels.add(label);
+            label_cache.put(cont,label);
         }
         
         return labels;
@@ -104,7 +126,7 @@ public class HtmlListFactory
 
 
     public void dispose() {
-        
+        label_cache.clear();
     }    
 
     public static ListDataContainer getContainer(Object obj) {
@@ -121,4 +143,9 @@ public class HtmlListFactory
     public void setListInfoTextColor(String value) {
         inactiveColor = value;
     }    
+    
+    public void cleanQueue()
+    {
+        label_cache.clear();
+    }
 }
