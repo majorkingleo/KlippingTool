@@ -430,6 +430,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
             if (idx >= 0) {
                 jLHist.setSelectedIndex(idx);
+                obj = jLHist.getSelectedValue();
             }
 
             if (obj instanceof ListDataContainer) {
