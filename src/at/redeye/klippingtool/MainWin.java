@@ -7,6 +7,9 @@ package at.redeye.klippingtool;
 import at.redeye.FrameWork.base.*;
 import at.redeye.FrameWork.utilities.StringUtils;
 import at.redeye.klippingtool.findinclude.FindIncludeFor;
+import at.redeye.klippingtool.manpage.FindManPageFor;
+import at.redeye.klippingtool.manpage.SimpleLookUpManPage;
+import at.redeye.klippingtool.manpage.SimpleLookUpManPage.ActionManPage;
 import at.redeye.klippingtool.nicehtmlist.ComponentCellRenderer;
 import at.redeye.klippingtool.nicehtmlist.HtmlListFactory;
 import java.awt.Toolkit;
@@ -19,8 +22,12 @@ import java.util.Comparator;
 import java.util.TimerTask;
 import java.util.Vector;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 
 /**
  *
@@ -37,6 +44,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
     String last_path;
     Vector<String> listSources;
     FindIncludeFor find_include_for;
+    FindManPageFor find_manpage_for;
     String current_working_file;
     boolean nice_html_list = false;
     HtmlListFactory html_list_factory;
@@ -86,6 +94,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
         last_path = root.getSetup().getLocalConfig("LastPath", "");
 
         find_include_for = new FindIncludeFor();
+        find_manpage_for = new FindManPageFor();
 
         getAutoRefreshTimer().schedule(new TimerTask() {
 
@@ -161,6 +170,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
         
         changeHistListStyle();       
         changeStyle = true;
+        jPanelManPage.setLayout(new java.awt.BorderLayout());
     }
 
     private void loadDb() throws IOException, ClassNotFoundException {
@@ -184,6 +194,56 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
         listSources = (Vector<String>) objIn.readObject();
     }
+    
+    private void startSearch(final ListDataContainer cont)
+    {
+        if( !cont.haveIncludes() )
+            find_include_for.findIncludeFor(cont, listSources, this);
+        
+        find_manpage_for.findManPageFor(cont, this, new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                                
+                if( e.getID() == SimpleLookUpManPage.ACTION_ID.CLEAR.ordinal() ) {
+                    jPanelManPage.removeAll();                              
+                    JTabbedPane tabPanel = new JTabbedPane();
+                    jPanelManPage.add(tabPanel);
+                    tabPanel.setVisible(true);
+                    logger.debug("CLEAR");
+                }
+
+                if( e.getID() == SimpleLookUpManPage.ACTION_ID.FOUND_MANPAGE.ordinal() ) {
+                    
+                    logger.debug("ADD " + e.getActionCommand());
+                    
+                    JPanel panel = new JPanel();
+                    panel.setLayout(new java.awt.BorderLayout());
+                    JTabbedPane tabPanel = (JTabbedPane) jPanelManPage.getComponent(0);
+                                        
+                    JEditorPane editor = new JEditorPane();
+                    editor.setContentType("text/html");                                                           
+                    editor.setText(e.getActionCommand());
+                    editor.setCaretPosition(0); 
+                    editor.setEditable(false);                                                   
+                                    
+                    String title = cont.getClipData();
+                    
+                    if( e instanceof SimpleLookUpManPage.ActionManPage ) {
+                        ActionManPage em = (ActionManPage) e;
+                        title = em.getTitle();
+                    }
+                    
+                    panel.add( new JScrollPane(editor));
+                    
+                    tabPanel.addTab(title,panel);                                        
+                    jPanelManPage.revalidate();
+                    jPanelManPage.updateUI();
+                }
+                
+            }
+        });
+    }
 
     private void appendClipData(String data) {
         if (listData == null) {
@@ -195,7 +255,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
             // ignore double entries
             if (listData.size() > 0 && listData.get(0).getClipData().equals(data)) {
                 if (firstRun) {
-                    find_include_for.findIncludeFor(listData.get(0), listSources, this);
+                    startSearch(listData.get(0));
                     setHistListData(listData);
                     firstRun = false;
                     listData.get(0).updateUsageDate();
@@ -212,17 +272,15 @@ public class MainWin extends BaseDialog implements StatusInformation {
                     found = true;
                     listData.removeElementAt(i);
                     listData.insertElementAt(ld, 0);
-                    ld.updateUsageDate();
-                    if (!ld.haveIncludes()) {
-                        find_include_for.findIncludeFor(listData.get(0), listSources, this);
-                    }
+                    ld.updateUsageDate();                    
+                    startSearch(listData.get(0));                    
                     break;
                 }
             }
 
             if (!found) {
                 listData.insertElementAt(new ListDataContainer(data), 0);
-                find_include_for.findIncludeFor(listData.get(0), listSources, this);
+                startSearch(listData.get(0));
                 listData.get(0).updateUsageDate();
             }
         }
@@ -300,6 +358,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jLSources = new javax.swing.JList();
+        jPanelManPage = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -313,7 +372,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
         jSplitPane1.setDividerLocation(200);
 
-        jLStatus.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        jLStatus.setFont(new java.awt.Font("Dialog", 0, 12));
         jLStatus.setText(" ");
         jSplitPane1.setLeftComponent(jLStatus);
 
@@ -334,7 +393,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jBClean, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))
+                .addComponent(jSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -354,7 +413,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -381,15 +440,28 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
         jTabbedPane1.addTab("Verzeichnisse", jPanel1);
 
+        javax.swing.GroupLayout jPanelManPageLayout = new javax.swing.GroupLayout(jPanelManPage);
+        jPanelManPage.setLayout(jPanelManPageLayout);
+        jPanelManPageLayout.setHorizontalGroup(
+            jPanelManPageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 439, Short.MAX_VALUE)
+        );
+        jPanelManPageLayout.setVerticalGroup(
+            jPanelManPageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 322, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Man Page", jPanelManPage);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
         pack();
@@ -516,6 +588,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanelManPage;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField jSearch;
