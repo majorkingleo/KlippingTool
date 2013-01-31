@@ -64,6 +64,12 @@ public class SimpleLookUpManPage implements WorkInterface {
     
     private boolean haveContent( String data )
     {
+        if( data == null )
+            return false;
+        
+        if( data.isEmpty() )
+            return false;
+        
         if( data.contains(EMPTY_PAGE_STRING) )
             return false;        
         
