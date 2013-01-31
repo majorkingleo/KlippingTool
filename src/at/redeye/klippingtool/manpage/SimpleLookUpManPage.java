@@ -91,17 +91,16 @@ public class SimpleLookUpManPage implements WorkInterface {
                                 
                 StringBuffer sb = new StringBuffer();
                 downloadUrl.download(sb, "ISO-8859-1");
-                // sb.toString(); read fopen
-
-                String data = sb.toString(); // .replaceFirst("<[hH][eE][aA][dD]>",ENCODING_REPLACEMENT);
                 
-                final String download_data = data;
+                final String download_data =  sb.toString();
                 
                 if (download_data != null) {
                     
                     if( !haveContent(download_data) ) {
                         continue;
                     }
+                    
+                    logger.debug(download_data);
                     
                     if (count == 0) {
                         if (listener != null) {
