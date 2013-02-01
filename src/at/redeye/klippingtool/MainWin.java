@@ -6,6 +6,9 @@ package at.redeye.klippingtool;
 
 import at.redeye.FrameWork.base.*;
 import at.redeye.FrameWork.utilities.StringUtils;
+import at.redeye.klippingtool.chm.FindCHMFor;
+import at.redeye.klippingtool.chm.SimpleLookUpCHM;
+import at.redeye.klippingtool.chm.SimpleLookUpCHM.ActionCHM;
 import at.redeye.klippingtool.findinclude.FindIncludeFor;
 import at.redeye.klippingtool.manpage.FindManPageFor;
 import at.redeye.klippingtool.manpage.SimpleLookUpManPage;
@@ -17,17 +20,12 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.TimerTask;
 import java.util.Vector;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JEditorPane;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 
 /**
  *
@@ -48,6 +46,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
     String current_working_file;
     boolean nice_html_list = false;
     HtmlListFactory html_list_factory;
+    FindCHMFor find_chm_for;
 
     /**
      * Creates new form MainWin
@@ -59,7 +58,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
         try {
             loadDb();
-        } catch (Exception ex) {
+        } catch (IOException | ClassNotFoundException ex) {
             logger.error(ex, ex);
         }
 
@@ -69,7 +68,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
             if (listSources != null) {
                 jLSources.setListData(listSources);
             }
-        } catch (Exception ex) {
+        } catch (IOException | ClassNotFoundException ex) {
             logger.error(ex, ex);
         }
 
@@ -96,6 +95,8 @@ public class MainWin extends BaseDialog implements StatusInformation {
         find_include_for = new FindIncludeFor();
         find_manpage_for = new FindManPageFor();
 
+        find_chm_for = new FindCHMFor(root);
+        
         getAutoRefreshTimer().schedule(new TimerTask() {
 
             @Override
@@ -166,11 +167,12 @@ public class MainWin extends BaseDialog implements StatusInformation {
                 if( changeStyle )
                     changeHistListStyle();
             }
-        });            
+        });
         
         changeHistListStyle();       
         changeStyle = true;
         jPanelManPage.setLayout(new java.awt.BorderLayout());
+        jPanelCHM.setLayout(new java.awt.BorderLayout());
     }
 
     private void loadDb() throws IOException, ClassNotFoundException {
@@ -240,6 +242,55 @@ public class MainWin extends BaseDialog implements StatusInformation {
                     jPanelManPage.revalidate();
                     jPanelManPage.updateUI();
                 }
+                
+            }
+        });
+        
+        find_chm_for.findManPageFor(cont, this, new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                if( e.getID() == SimpleLookUpCHM.ACTION_ID.CLEAR.ordinal() ) {                    
+                    jPanelCHM.removeAll();                              
+                    JTabbedPane tabPanel = new JTabbedPane();
+                    jPanelCHM.add(tabPanel);
+                    tabPanel.setVisible(true);
+                    logger.debug("CLEAR");
+                }
+
+                if( e.getID() == SimpleLookUpCHM.ACTION_ID.FOUND_CHM.ordinal() ) {
+                    
+                    logger.debug("ADD " + e.getActionCommand());
+                    
+                    JPanel panel = new JPanel();
+                    panel.setLayout(new java.awt.BorderLayout());
+                    JTabbedPane tabPanel = (JTabbedPane) jPanelCHM.getComponent(0);
+                    
+                    try {
+                        JEditorPane editor = new JEditorPane();
+                        editor.setContentType("text/html");                                               
+                        editor.setCaretPosition(0);
+                        editor.setEditable(false);
+                        editor.setCaretPosition(0);        
+                        editor.setPage(new URL(e.getActionCommand()));
+
+                        String title = cont.getClipData();
+
+                        if (e instanceof ActionCHM) {
+                            ActionCHM em = (ActionCHM) e;
+                            title = em.getTitle();
+                        }
+
+                        panel.add(new JScrollPane(editor));
+
+                        tabPanel.addTab(title, panel);
+                        jPanelCHM.revalidate();
+                        jPanelCHM.updateUI();
+                    } catch ( IOException ex) {
+                        logger.error(ex, ex);
+                    }
+                }                
                 
             }
         });
@@ -359,6 +410,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
         jScrollPane2 = new javax.swing.JScrollPane();
         jLSources = new javax.swing.JList();
         jPanelManPage = new javax.swing.JPanel();
+        jPanelCHM = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -372,7 +424,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
         jSplitPane1.setDividerLocation(200);
 
-        jLStatus.setFont(new java.awt.Font("Dialog", 0, 12));
+        jLStatus.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jLStatus.setText(" ");
         jSplitPane1.setLeftComponent(jLStatus);
 
@@ -393,12 +445,12 @@ public class MainWin extends BaseDialog implements StatusInformation {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jBClean, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
+                .addComponent(jSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jBClean, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE)
+            .addComponent(jSearch)
         );
 
         jSplitPane1.setRightComponent(jPanel3);
@@ -407,8 +459,8 @@ public class MainWin extends BaseDialog implements StatusInformation {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -431,7 +483,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -444,7 +496,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
         jPanelManPage.setLayout(jPanelManPageLayout);
         jPanelManPageLayout.setHorizontalGroup(
             jPanelManPageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 439, Short.MAX_VALUE)
+            .addGap(0, 485, Short.MAX_VALUE)
         );
         jPanelManPageLayout.setVerticalGroup(
             jPanelManPageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -453,11 +505,26 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
         jTabbedPane1.addTab("Man Page", jPanelManPage);
 
+        javax.swing.GroupLayout jPanelCHMLayout = new javax.swing.GroupLayout(jPanelCHM);
+        jPanelCHM.setLayout(jPanelCHMLayout);
+        jPanelCHMLayout.setHorizontalGroup(
+            jPanelCHMLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 485, Short.MAX_VALUE)
+        );
+        jPanelCHMLayout.setVerticalGroup(
+            jPanelCHMLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 322, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Hilfe Seite", jPanelCHM);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jTabbedPane1)
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -588,6 +655,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanelCHM;
     private javax.swing.JPanel jPanelManPage;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

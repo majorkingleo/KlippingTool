@@ -5,6 +5,7 @@
 package at.redeye.klippingtool.findinclude;
 
 import at.redeye.FrameWork.utilities.WorkerThread.WorkerThread;
+import at.redeye.klippingtool.BaseLookup;
 import at.redeye.klippingtool.ListDataContainer;
 import at.redeye.klippingtool.StatusInformation;
 import java.io.File;
@@ -14,13 +15,13 @@ import java.util.Vector;
  *
  * @author martin
  */
-public class FindIncludeFor 
+public class FindIncludeFor extends BaseLookup
 {
     WorkerThread worker_thread;        
     
     public FindIncludeFor()
     {
-       createWorker();
+       super();
     }
     
     public void findIncludeFor( ListDataContainer cont, Vector<String> listSources, StatusInformation statusinfo )
@@ -32,26 +33,8 @@ public class FindIncludeFor
             File dir = new File( source_dir );
             
             if( dir.exists() && dir.isDirectory() && cont.getClipData().trim().length() > 2 ) {
-                worker_thread.add(new SimpleFindIncludeFor(cont, source_dir, statusinfo ));
+                addWorker(new SimpleFindIncludeFor(cont, source_dir, statusinfo ));
             }
         }
-    }
-    
-    private void createWorker()
-    {
-        worker_thread  = new WorkerThread(FindIncludeFor.class.getName());
-        worker_thread.setDaemon(true);
-        worker_thread.start();        
-    }
-    
-    public boolean isIdle() {
-        
-        if( !worker_thread.isAlive() )
-        {
-            createWorker();
-        }
-                
-        worker_thread.callFinishedWork();
-        return worker_thread.isIdle();
-    }
+    }       
 }

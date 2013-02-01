@@ -33,7 +33,9 @@ public class KlippingTool extends BaseModuleLauncher
             splash = new StartupWindow(
                     "/at/redeye/FrameWork/base/resources/pictures/redeye.png");
         }                 
-         
+        
+        root.registerPlugin( new at.redeye.Plugins.JerichoHtml.Plugin() );
+        
         AppConfigDefinitions.registerDefinitions(root);
 	FrameWorkConfigDefinitions.registerDefinitions();               
         
