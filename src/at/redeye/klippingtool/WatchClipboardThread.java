@@ -49,7 +49,7 @@ public class WatchClipboardThread extends Thread
             try {
                 final String data = (String) transfer.getTransferData( DataFlavor.stringFlavor );                
                 
-                if( data != null ) 
+                if( data != null && !data.trim().isEmpty() ) 
                 {
                     if( lastClippingText == null )
                     {

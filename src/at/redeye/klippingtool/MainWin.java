@@ -21,10 +21,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.TimerTask;
-import java.util.Vector;
+import java.util.*;
 import javax.swing.*;
 
 /**
@@ -41,12 +38,10 @@ public class MainWin extends BaseDialog implements StatusInformation {
     WatchClipboardThread clipping_thread;
     String last_path;
     Vector<String> listSources;
-    FindIncludeFor find_include_for;
-    FindManPageFor find_manpage_for;
     String current_working_file;
     boolean nice_html_list = false;
     HtmlListFactory html_list_factory;
-    FindCHMFor find_chm_for;
+    ArrayList<BaseLookup> find_workers;
 
     /**
      * Creates new form MainWin
@@ -92,10 +87,11 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
         last_path = root.getSetup().getLocalConfig("LastPath", "");
 
-        find_include_for = new FindIncludeFor();
-        find_manpage_for = new FindManPageFor();
-
-        find_chm_for = new FindCHMFor(root);
+        find_workers = new ArrayList();
+        
+        find_workers.add(new FindIncludeFor(this));        
+        find_workers.add(new FindManPageFor(this, jPanelManPage));
+        find_workers.add(new FindCHMFor(this, jPanelCHM));
         
         getAutoRefreshTimer().schedule(new TimerTask() {
 
@@ -106,16 +102,23 @@ public class MainWin extends BaseDialog implements StatusInformation {
                     @Override
                     public void run() {
 
-                        String status_text = null;
+                        String status_text = "Warte auf Arbeit ... ";
 
-                        if (find_include_for.isIdle()) {
-                            status_text = "Warte auf Arbeit ... ";
-                        } else {
-                            status_text = "Suche ... ";
-
-                            if (current_working_file != null) {
-                                status_text += current_working_file;
+                        String message = null;
+                        
+                        for( BaseLookup worker : find_workers )
+                        {
+                            if( !worker.isIdle() ) {
+                                message = current_working_file;
+                                break;
                             }
+                        }
+                        
+
+                        if( message != null )
+                        {
+                            status_text = "Suche ... ";
+                            status_text += message;                            
                         }
 
                         logger.trace(status_text);
@@ -199,101 +202,10 @@ public class MainWin extends BaseDialog implements StatusInformation {
     
     private void startSearch(final ListDataContainer cont)
     {
-        if( !cont.haveIncludes() )
-            find_include_for.findIncludeFor(cont, listSources, this);
-        
-        find_manpage_for.findManPageFor(cont, this, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                                
-                if( e.getID() == SimpleLookUpManPage.ACTION_ID.CLEAR.ordinal() ) {
-                    jPanelManPage.removeAll();                              
-                    JTabbedPane tabPanel = new JTabbedPane();
-                    jPanelManPage.add(tabPanel);
-                    tabPanel.setVisible(true);
-                    logger.debug("CLEAR");
-                }
-
-                if( e.getID() == SimpleLookUpManPage.ACTION_ID.FOUND_MANPAGE.ordinal() ) {
-                    
-                    logger.debug("ADD " + e.getActionCommand());
-                    
-                    JPanel panel = new JPanel();
-                    panel.setLayout(new java.awt.BorderLayout());
-                    JTabbedPane tabPanel = (JTabbedPane) jPanelManPage.getComponent(0);
-                                        
-                    JEditorPane editor = new JEditorPane();
-                    editor.setContentType("text/html");                                                           
-                    editor.setText(e.getActionCommand());
-                    editor.setCaretPosition(0); 
-                    editor.setEditable(false);                                                   
-                                    
-                    String title = cont.getClipData();
-                    
-                    if( e instanceof SimpleLookUpManPage.ActionManPage ) {
-                        ActionManPage em = (ActionManPage) e;
-                        title = em.getTitle();
-                    }
-                    
-                    panel.add( new JScrollPane(editor));
-                    
-                    tabPanel.addTab(title,panel);                                        
-                    jPanelManPage.revalidate();
-                    jPanelManPage.updateUI();
-                }
-                
-            }
-        });
-        
-        find_chm_for.findManPageFor(cont, this, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                
-                if( e.getID() == SimpleLookUpCHM.ACTION_ID.CLEAR.ordinal() ) {                    
-                    jPanelCHM.removeAll();                              
-                    JTabbedPane tabPanel = new JTabbedPane();
-                    jPanelCHM.add(tabPanel);
-                    tabPanel.setVisible(true);
-                    logger.debug("CLEAR");
-                }
-
-                if( e.getID() == SimpleLookUpCHM.ACTION_ID.FOUND_CHM.ordinal() ) {
-                    
-                    logger.debug("ADD " + e.getActionCommand());
-                    
-                    JPanel panel = new JPanel();
-                    panel.setLayout(new java.awt.BorderLayout());
-                    JTabbedPane tabPanel = (JTabbedPane) jPanelCHM.getComponent(0);
-                    
-                    try {
-                        JEditorPane editor = new JEditorPane();
-                        editor.setContentType("text/html");                                               
-                        editor.setCaretPosition(0);
-                        editor.setEditable(false);
-                        editor.setCaretPosition(0);        
-                        editor.setPage(new URL(e.getActionCommand()));
-
-                        String title = cont.getClipData();
-
-                        if (e instanceof ActionCHM) {
-                            ActionCHM em = (ActionCHM) e;
-                            title = em.getTitle();
-                        }
-
-                        panel.add(new JScrollPane(editor));
-
-                        tabPanel.addTab(title, panel);
-                        jPanelCHM.revalidate();
-                        jPanelCHM.updateUI();
-                    } catch ( IOException ex) {
-                        logger.error(ex, ex);
-                    }
-                }                
-                
-            }
-        });
+        for( BaseLookup worker : find_workers )
+        {
+            worker.lookUp(cont);
+        }
     }
 
     private void appendClipData(String data) {
@@ -839,5 +751,9 @@ public class MainWin extends BaseDialog implements StatusInformation {
             
             jLHist.setListData(html_list_factory.createLabels(list));
         }
+    }
+    
+    public Vector<String> getSources() {
+        return listSources;
     }
 }

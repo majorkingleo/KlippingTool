@@ -7,17 +7,29 @@ package at.redeye.klippingtool;
 import at.redeye.FrameWork.base.Root;
 import at.redeye.FrameWork.utilities.WorkerThread.WorkInterface;
 import at.redeye.FrameWork.utilities.WorkerThread.WorkerThread;
+import javax.swing.JPanel;
 import org.apache.log4j.Logger;
 
 /**
  *
  * @author martin
  */
-public class BaseLookup {
+public abstract class BaseLookup {
     public static final Logger logger = Logger.getLogger(BaseLookup.class.getName());
     
     WorkerThread worker_thread;        
     Root root;
+    MainWin mainwin;
+    JPanel panel;
+    
+    public BaseLookup(MainWin mainwin, JPanel panel )
+    {
+       this.root = mainwin.getRoot();
+       this.panel = panel;
+       this.mainwin = mainwin;
+       createWorker();       
+    }
+        
     
     public BaseLookup(Root root)
     {
@@ -53,4 +65,25 @@ public class BaseLookup {
     {
         worker_thread.add(worker_job);
     }
+    
+    /**
+     * called from ugi thread to render the help page
+     * @param cont
+     * @param source_dir
+     * @param mainwin 
+     */
+    public abstract void lookUp( ListDataContainer cont );
+
+    public JPanel getPanel() {
+        return panel;
+    }
+    
+    public MainWin getMainWin() {
+        return mainwin;
+    }
+    
+    public Root getRoot() {
+        return root;
+    }
+    
 }   

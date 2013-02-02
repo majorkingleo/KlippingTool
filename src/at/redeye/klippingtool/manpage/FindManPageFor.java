@@ -4,12 +4,12 @@
  */
 package at.redeye.klippingtool.manpage;
 
-import at.redeye.FrameWork.utilities.WorkerThread.WorkerThread;
 import at.redeye.klippingtool.BaseLookup;
 import at.redeye.klippingtool.ListDataContainer;
+import at.redeye.klippingtool.MainWin;
 import at.redeye.klippingtool.StatusInformation;
 import java.awt.event.ActionListener;
-import org.apache.log4j.Logger;
+import javax.swing.JPanel;
 
 /**
  *
@@ -17,9 +17,9 @@ import org.apache.log4j.Logger;
  */
 public class FindManPageFor extends BaseLookup {
     
-    public FindManPageFor()
+    public FindManPageFor(MainWin mainwin, JPanel panel )
     {
-        super();
+        super(mainwin, panel);
     }
     
     public void findManPageFor( ListDataContainer cont, StatusInformation statusinfo , ActionListener listener )
@@ -30,5 +30,12 @@ public class FindManPageFor extends BaseLookup {
         logger.debug("searching for " + cont.getClipData());
         
         addWorker( new SimpleLookUpManPage(cont, listener ));
-    }       
+    }
+
+    @Override
+    public void lookUp(ListDataContainer cont) {
+        
+        findManPageFor(cont, getMainWin(), new ManPageActionListener(cont,  getPanel()));
+
+    }
 }
