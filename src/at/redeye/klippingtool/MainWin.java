@@ -576,7 +576,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 
-    void addSourceDirectory(final File target_dir) {
+    public void addSourceDirectory(final File target_dir) {
         if (listSources == null) {
             listSources = new Vector<String>();
         }
@@ -755,5 +755,9 @@ public class MainWin extends BaseDialog implements StatusInformation {
     
     public Vector<String> getSources() {
         return listSources;
+    }
+    
+    public ArrayList<BaseLookup> getFindWorker() {
+        return find_workers;
     }
 }

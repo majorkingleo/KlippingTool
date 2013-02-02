@@ -7,7 +7,10 @@ package at.redeye.klippingtool;
 import at.redeye.FrameWork.base.Root;
 import at.redeye.FrameWork.utilities.WorkerThread.WorkInterface;
 import at.redeye.FrameWork.utilities.WorkerThread.WorkerThread;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import org.apache.log4j.Logger;
 
 /**
@@ -84,6 +87,27 @@ public abstract class BaseLookup {
     
     public Root getRoot() {
         return root;
+    }
+    
+    /**
+     * Method called for each worker, to append some context menus to 
+     * ActionPopupes
+     * @param popup  The Action Popup
+     * @param command Identifier for the Pupup menu wille by ActionPopupSources.SOURCES_LIST for the Sources popup
+     */
+    public void addPopupMenutItemTo( JPopupMenu popup, String command )
+    {
+        
+    }        
+    
+    /**
+     * called when an entry from a list is removed. Eg in the sources list.
+     * @param cont  The entry
+     * @param data_source Identifier for the Pupup menu wille by ActionPopupSources.SOURCES_LIST for the Sources popup
+     */
+    public void removedEntry( String cont, String data_source )
+    {
+        
     }
     
 }   
