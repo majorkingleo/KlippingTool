@@ -4,18 +4,18 @@
  */
 package at.redeye.klippingtool.chm;
 
+import at.redeye.FrameWork.utilities.FileExtFilter;
 import at.redeye.FrameWork.utilities.ReadFile;
 import at.redeye.FrameWork.utilities.WorkerThread.WorkInterface;
 import at.redeye.klippingtool.ListDataContainer;
-import at.redeye.klippingtool.lib.FileExtFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.util.List;
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.Source;
-import net.htmlparser.jericho.StartTagType;
 import org.apache.log4j.Logger;
 
 /**
@@ -110,7 +110,7 @@ public class SimpleLookUpCHM implements WorkInterface {
                 {
                     logger.debug( "found " + keyword + " in " + subdir.getName() );
                     
-                    File index_files[] = subdir.listFiles(new FileExtFilter("*.hhc; *.hhk"));
+                    File index_files[] = subdir.listFiles((FilenameFilter)new FileExtFilter("*.hhc; *.hhk"));
                     
                     if( index_files != null )
                     {

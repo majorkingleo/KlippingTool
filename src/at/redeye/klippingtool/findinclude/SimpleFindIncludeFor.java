@@ -4,11 +4,11 @@
  */
 package at.redeye.klippingtool.findinclude;
 
+import at.redeye.FrameWork.utilities.FileExtFilter;
 import at.redeye.FrameWork.utilities.ReadFile;
 import at.redeye.FrameWork.utilities.WorkerThread.WorkInterface;
 import at.redeye.klippingtool.ListDataContainer;
 import at.redeye.klippingtool.StatusInformation;
-import at.redeye.klippingtool.lib.FileExtFilter;
 import at.redeye.klippingtool.lib.FileFoundInterface;
 import at.redeye.klippingtool.lib.SearchForFiles;
 import java.io.File;

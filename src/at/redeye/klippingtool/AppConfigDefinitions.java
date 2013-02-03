@@ -72,6 +72,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
             new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_TRUE_FALSE));   
     public static DBConfig NiceHtmlListInfoTextColor = new DBConfig("NiceHtmlListInfoTextColor","#cccccc","Farbe für die nebensächlichen Informationen, wie Datum und beliebtheit.",
             new PrmAnyCheck());
+    public static DBConfig SevenZipExtracor = new DBConfig("7z","","Pfad zum 7z Programm",new PrmAnyCheck());
     
     public static void registerDefinitions(Root root) {
 
@@ -82,6 +83,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         addLocal(RequestBeforeCleaningQueue);
         addLocal(NiceHtmlList);
         addLocal(NiceHtmlListInfoTextColor);
+        addLocal(SevenZipExtracor);
         
         new UpdateListener( root, MaxLineWidth, new UpdateListenerLoadChangesFromString() {
 

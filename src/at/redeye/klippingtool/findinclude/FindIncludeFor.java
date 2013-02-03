@@ -77,7 +77,7 @@ public class FindIncludeFor extends BaseLookup
                     fc.setCurrentDirectory(new File(last_path));
                 }
 
-                int retval = fc.showSaveDialog(getMainWin());
+                int retval = fc.showOpenDialog(getMainWin());
 
                 if (retval != 0) {
                     return;
