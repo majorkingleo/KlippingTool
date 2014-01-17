@@ -27,7 +27,7 @@ public class FindIncludeFor extends BaseLookup
        super(mainwin, null);
     }
     
-    public void findIncludeFor( ListDataContainer cont, Vector<String> listSources, StatusInformation statusinfo )
+    public void findIncludeFor( ListDataContainer cont, Vector<String> listSources, StatusInformation statusinfo, FileCache file_cache )
     {
         if( listSources == null || cont == null )
             return;
@@ -36,7 +36,7 @@ public class FindIncludeFor extends BaseLookup
             File dir = new File( source_dir );
             
             if( dir.exists() && dir.isDirectory() && cont.getClipData().trim().length() > 2 ) {
-                addWorker(new SimpleFindIncludeFor(cont, source_dir, statusinfo ));
+                addWorker(new SimpleFindIncludeFor(cont, source_dir, statusinfo, file_cache ));
             }
         }
     }
@@ -44,7 +44,7 @@ public class FindIncludeFor extends BaseLookup
     @Override
     public void lookUp(ListDataContainer cont) {
          if( !cont.haveIncludes() ) {      
-            findIncludeFor(cont, getMainWin().getSources(), getMainWin());
+            findIncludeFor(cont, getMainWin().getSources(), getMainWin(),  getMainWin().getFileCache() );
          }
     }
     

@@ -9,6 +9,7 @@ import at.redeye.FrameWork.utilities.StringUtils;
 import at.redeye.klippingtool.chm.FindCHMFor;
 import at.redeye.klippingtool.chm.SimpleLookUpCHM;
 import at.redeye.klippingtool.chm.SimpleLookUpCHM.ActionCHM;
+import at.redeye.klippingtool.findinclude.FileCache;
 import at.redeye.klippingtool.findinclude.FindIncludeFor;
 import at.redeye.klippingtool.manpage.FindManPageFor;
 import at.redeye.klippingtool.manpage.SimpleLookUpManPage;
@@ -42,6 +43,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
     boolean nice_html_list = false;
     HtmlListFactory html_list_factory;
     ArrayList<BaseLookup> find_workers;
+    FileCache file_cache;
 
     /**
      * Creates new form MainWin
@@ -55,9 +57,8 @@ public class MainWin extends BaseDialog implements StatusInformation {
             loadDb();
         } catch (IOException | ClassNotFoundException ex) {
             logger.error(ex, ex);
-        }
-
-
+        }        
+        
         try {
             loadDbSources();
             if (listSources != null) {
@@ -67,6 +68,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
             logger.error(ex, ex);
         }
 
+        file_cache = new FileCache();
         clipping_thread = new WatchClipboardThread(new ActionListener() {
 
             @Override
@@ -202,9 +204,11 @@ public class MainWin extends BaseDialog implements StatusInformation {
     
     private void startSearch(final ListDataContainer cont)
     {
-        for( BaseLookup worker : find_workers )
+        if (find_workers != null) 
         {
-            worker.lookUp(cont);
+            for (BaseLookup worker : find_workers) {
+                worker.lookUp(cont);
+            }
         }
     }
 
@@ -759,5 +763,9 @@ public class MainWin extends BaseDialog implements StatusInformation {
     
     public ArrayList<BaseLookup> getFindWorker() {
         return find_workers;
+    }
+
+    public FileCache getFileCache() {
+        return file_cache;
     }
 }

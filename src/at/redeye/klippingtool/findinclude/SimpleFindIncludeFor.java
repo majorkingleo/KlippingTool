@@ -26,12 +26,14 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
     ListDataContainer cont;
     String source_dir;   
     StatusInformation statusinfo;
+    FileCache file_cache;
     
-    public SimpleFindIncludeFor( ListDataContainer cont, String source_dir, StatusInformation mainwin )
+    public SimpleFindIncludeFor( ListDataContainer cont, String source_dir, StatusInformation mainwin, FileCache file_cache )
     {
         this.cont = cont;
         this.source_dir = source_dir;        
         this.statusinfo = mainwin;
+        this.file_cache = file_cache;
     }
 
     @Override
@@ -110,7 +112,16 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
     @Override
     public boolean fileFound(File file) {
         
-        String content = ReadFile.read_file(file.getPath());
+        String content = null;
+        
+        if( file_cache != null )
+        {
+            content = file_cache.readFile(file);
+        }
+        else
+        {        
+            content = ReadFile.read_file(file.getPath());
+        }
         statusinfo.setCurrentWorkingFile( file.getName() );
         
         if( content != null ) {
