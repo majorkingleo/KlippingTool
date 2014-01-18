@@ -76,4 +76,12 @@ public class FileCache
         
         return cf.getContent();
     }
+    
+
+    public void clear() 
+    {
+         synchronized (file_map) {
+             file_map.clear();
+         }
+    }    
 }

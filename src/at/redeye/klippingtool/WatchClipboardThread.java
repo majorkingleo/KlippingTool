@@ -4,6 +4,7 @@
  */
 package at.redeye.klippingtool;
 
+import at.redeye.FrameWork.utilities.StringUtils;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -37,39 +38,78 @@ public class WatchClipboardThread extends Thread
         lastClippingText = text;
     }
     
+    long logMem( String title )
+    {
+        return logMem( title, -1 );
+    }
+    
+    long logMem( String title, long mem_before )
+    {
+        Runtime rt = Runtime.getRuntime();
+        long mem = rt.totalMemory() - rt.freeMemory();
+        
+        if( mem_before > 0 )
+            System.out.println(title + ": " + mem + " + " +  (mem - mem_before));
+        else
+            System.out.println(title + ": " + mem);
+        
+        return mem;
+    }
+    
     @Override
     public void run()
     {
         final Clipboard systemClip = Toolkit.getDefaultToolkit().getSystemClipboard();   
         final Clipboard selClip  = Toolkit.getDefaultToolkit().getSystemSelection();
         
+        // long mem = -1;
+        
         do
         {
-            final Transferable transfer = systemClip.getContents( null );
+            // mem = logMem("before transfer", mem );
+            
+            final Transferable transfer = systemClip.getContents( null );                        
+            
+            // mem = logMem("after transfer", mem );
+            
             try {
-                final String data = (String) transfer.getTransferData( DataFlavor.stringFlavor );                
+                String data = null;
                 
-                if( data != null && !data.trim().isEmpty() ) 
-                {
-                    if( lastClippingText == null )
-                    {
-                        lastClippingText = data;
-                        logger.debug("clipboard changed: " + data);
-                        onClipboardChanged.actionPerformed(new ActionEvent("clipboard",0,data));
-                        
-                    } else if( !lastClippingText.equals(data) ) {
-                        
-                        lastClippingText = data;
-                        
-                        logger.debug("clipboard changed: " + data);
-                        onClipboardChanged.actionPerformed(new ActionEvent("clipboard",0,data));
+                try {
+                    data = (String) transfer.getTransferData(DataFlavor.stringFlavor);
+
+                    // mem = logMem("after getTransferData", mem );
+                    
+                } catch (UnsupportedFlavorException ex) {
+                    logger.error(ex, ex);
+
+                    if (ex.toString().contains("Unicode String")) {
+                        data =  (String)  transfer.getTransferData(DataFlavor.getTextPlainUnicodeFlavor());
+                    } else {
+                        throw ex;
                     }
                 }
-                
-            } catch (    UnsupportedFlavorException | IOException ex) {
-                logger.error(ex,ex);
-            }            
-                        
+
+                if (data != null && !data.trim().isEmpty()) {
+                    if (lastClippingText == null) {
+                        lastClippingText = data;
+                        logger.debug("clipboard changed: " + data);
+                        onClipboardChanged.actionPerformed(new ActionEvent("clipboard", 0, data));
+
+                    } else if (!lastClippingText.equals(data)) {
+
+                        lastClippingText = data;
+
+                        logger.debug("clipboard changed: " + data);
+                        onClipboardChanged.actionPerformed(new ActionEvent("clipboard", 0, data));
+                    }
+                }
+
+            } catch (UnsupportedFlavorException | IOException ex) {
+                logger.error(ex, ex);
+
+            }    
+                                
             if (selClip != null) {
                 try {
                     final Transferable transferSel = selClip.getContents(null);
@@ -95,7 +135,7 @@ public class WatchClipboardThread extends Thread
                     logger.error(ex, ex);
                 }
             }
-            
+                
             try {
                 sleep(500);
             } catch( InterruptedException ex ) {

@@ -599,6 +599,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
     void removeSourcesDirectory(String name) {
         listSources.remove(name);
         jLSources.setListData(listSources);
+        file_cache.clear();
     }
 
     public void paste(String data) {
