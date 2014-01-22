@@ -79,7 +79,7 @@ public class FileCache
     
 
     public void clear() 
-    {
+    {        
          synchronized (file_map) {
              file_map.clear();
          }

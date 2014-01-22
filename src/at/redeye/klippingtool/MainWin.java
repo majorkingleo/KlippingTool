@@ -7,13 +7,9 @@ package at.redeye.klippingtool;
 import at.redeye.FrameWork.base.*;
 import at.redeye.FrameWork.utilities.StringUtils;
 import at.redeye.klippingtool.chm.FindCHMFor;
-import at.redeye.klippingtool.chm.SimpleLookUpCHM;
-import at.redeye.klippingtool.chm.SimpleLookUpCHM.ActionCHM;
 import at.redeye.klippingtool.findinclude.FileCache;
 import at.redeye.klippingtool.findinclude.FindIncludeFor;
 import at.redeye.klippingtool.manpage.FindManPageFor;
-import at.redeye.klippingtool.manpage.SimpleLookUpManPage;
-import at.redeye.klippingtool.manpage.SimpleLookUpManPage.ActionManPage;
 import at.redeye.klippingtool.nicehtmlist.ComponentCellRenderer;
 import at.redeye.klippingtool.nicehtmlist.HtmlListFactory;
 import java.awt.Toolkit;
@@ -21,7 +17,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.*;
-import java.net.URL;
 import java.util.*;
 import javax.swing.*;
 
@@ -67,8 +62,22 @@ public class MainWin extends BaseDialog implements StatusInformation {
         } catch (IOException | ClassNotFoundException ex) {
             logger.error(ex, ex);
         }
-
+        
         file_cache = new FileCache();
+        
+        new AppConfigDefinitions.UpdateListener( root, AppConfigDefinitions.FileCache, new AppConfigDefinitions.UpdateListenerLoadChangesFromString() {
+
+            @Override
+            public void doUpdate(String value) {                
+                if( !StringUtils.isYes(value) )
+                {                    
+                    logger.debug("clearing filecache");
+                    file_cache.clear();
+                    System.gc();
+                }
+            }
+        }); 
+        
         clipping_thread = new WatchClipboardThread(new ActionListener() {
 
             @Override
@@ -766,7 +775,15 @@ public class MainWin extends BaseDialog implements StatusInformation {
         return find_workers;
     }
 
-    public FileCache getFileCache() {
-        return file_cache;
+    public FileCache getFileCache() 
+    {
+        if( StringUtils.isYes( root.getSetup().getLocalConfig(AppConfigDefinitions.FileCache)) )
+        {
+            logger.debug("file cache is enabled");
+            return file_cache;
+        }
+        
+        logger.debug("file cache is disabled");
+        return null;
     }
 }
