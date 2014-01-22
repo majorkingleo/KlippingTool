@@ -56,7 +56,7 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
         
     }
     
-    private String getWholeLine( String data, int idx )
+    private static String getWholeLine( String data, int idx )
     {
         int ende = data.indexOf('\n', idx);
         
@@ -80,13 +80,13 @@ public class SimpleFindIncludeFor implements WorkInterface, FileFoundInterface
         
         if( ende < i ) {
             // bis zum ende des Strings
-            return  data.substring(i);
+            return  data.substring(i).trim();
         }
         
-        return data.substring(i, ende);
+        return data.substring(i, ende).trim();
     }    
     
-    private String getPartOfCode( String data, int idx )
+    private static String getPartOfCode( String data, int idx )
     {
         int ende = data.indexOf('\n', idx);
         
