@@ -9,10 +9,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.text.EditorKit;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
+import net.htmlparser.jericho.Source;
+import net.htmlparser.jericho.StartTag;
 import org.apache.log4j.Logger;
 
 /**
@@ -56,6 +62,7 @@ public class CHMActionListener implements ActionListener {
                 editor.setCaretPosition(0);
                 editor.setEditable(false);
                 editor.setPage(new URL(e.getActionCommand()));
+                adjustFont(editor);
 
                 String title = cont.getClipData();
 
@@ -75,5 +82,47 @@ public class CHMActionListener implements ActionListener {
         }        
         
        
+    }
+    
+    private void adjustFont(JEditorPane body)
+    {
+        int font_size = 12;
+        EditorKit editor = body.getEditorKit();
+   
+        if (editor instanceof HTMLEditorKit) {                                   
+            
+            Source source = new Source(body.getText());
+            source.fullSequentialParse();
+
+            ArrayList<String> tags = new ArrayList();
+
+            for (StartTag tag : source.getAllStartTags()) {                
+                tags.add(tag.getName());
+            }
+            
+            
+            HTMLEditorKit html_editor = (HTMLEditorKit) editor;
+
+            System.out.println("Value: " + font_size);
+
+            StyleSheet sheet = html_editor.getStyleSheet();          
+            
+            String rule = "{ font-size: " + (font_size) + "pt; }";
+
+            StringBuilder sb = new StringBuilder();
+
+            for (String tag : tags) {
+                sb.append(tag);
+                sb.append(rule);
+            }
+
+            sheet.addRule(sb.toString());
+
+            String text = body.getText();
+            body.setDocument(html_editor.createDefaultDocument());
+            body.setText(text);                       
+            body.setCaretPosition(0);
+
+        }
     }
 }

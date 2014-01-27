@@ -8,8 +8,6 @@ package at.redeye.klippingtool;
 import at.redeye.FrameWork.base.Root;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.apache.log4j.Logger;
@@ -46,6 +44,11 @@ public class ActionPopupSources extends JPopupMenu
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    
+                    for (BaseLookup worker : mainwin.getFindWorker()) {
+                        worker.removedEntry(cont, SOURCES_LIST);
+                    }
+                    
                     mainwin.removeSourcesDirectory(cont);
                 }
             });

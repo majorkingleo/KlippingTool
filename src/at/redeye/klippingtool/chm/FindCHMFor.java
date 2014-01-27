@@ -4,6 +4,7 @@
  */
 package at.redeye.klippingtool.chm;
 
+import at.redeye.FrameWork.base.AutoMBox;
 import at.redeye.FrameWork.base.Setup;
 import at.redeye.klippingtool.*;
 import java.awt.event.ActionEvent;
@@ -86,15 +87,42 @@ public class FindCHMFor extends BaseLookup {
                 if( files == null )
                     return;
                 
-                for( File file : files )
-                {                
-                    if( file.canRead() )
-                    {                    
-                        getMainWin().addSourceDirectory(file);
-                        getMainWin().setLastOpenPath(file.getParent());
+                for( File file_ : files )
+                {              
+                    final File file = file_;
+                    
+                    if (file.canRead()) {
+                        new AutoMBox(FindCHMFor.class.getName()) {
+
+                            @Override
+                            public void do_stuff() throws Exception {
+                                ExtractCHM extractor = new ExtractCHM(getRoot(), base_search_directory);
+
+                                if (extractor.extractCHM(file)) {
+                                    getMainWin().addSourceDirectory(file);
+                                    getMainWin().setLastOpenPath(file.getParent());
+                                }
+
+                            }
+                        };
                     }
                 }
             }                        
-        });        
-    }        
+        });                                
+    }
+
+    @Override
+    public void removedEntry(String cont, String data_source) {
+        
+        if (!data_source.equals(ActionPopupSources.SOURCES_LIST)) {
+            return;
+        }
+
+        ExtractCHM extractor = new ExtractCHM(getRoot(), base_search_directory);
+
+        extractor.deleteCHMdirectory(cont);        
+    }
+    
+    
+   
 }
