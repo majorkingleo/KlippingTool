@@ -9,6 +9,7 @@ import at.redeye.FrameWork.base.Root;
 import at.redeye.klippingtool.AppConfigDefinitions;
 import at.redeye.klippingtool.ListDataContainer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,7 +44,9 @@ public class HtmlListFactory
     
     SimpleDateFormat sdf;
     String inactiveColor;
-    HashMap<ListDataContainer,MyLabel> label_cache;
+    HashMap<ListDataContainer,MyLabel> label_cache;  
+    
+    ArrayList<Converter> converter;       
     
     public HtmlListFactory( Root root )
     {
@@ -52,6 +55,10 @@ public class HtmlListFactory
         } catch( Exception ex ) {
             logger.error(ex,ex);
         }
+        
+        converter = new ArrayList<>();
+        
+        converter.add(new ConvertUnixTimeStamp(root));
         
         inactiveColor = root.getSetup().getLocalConfig(AppConfigDefinitions.NiceHtmlListInfoTextColor);
         
@@ -84,6 +91,10 @@ public class HtmlListFactory
             sb.append("\">");
             sb.append(sdf.format(new Date(cont.getUsageDate())));
             sb.append("</font></i>");
+        }
+        
+        for( Converter conv : converter ) {
+            conv.appendInfo(sb, cont);
         }
         
         sb.append("</body></html>");

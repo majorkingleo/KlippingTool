@@ -76,6 +76,8 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
     public static DBConfig FileCache = new DBConfig("FileCache","true","Datei Zwischenspeicher einschalten.", 
             new PrmDefaultCheckSuite(PrmDefaultChecksInterface.PRM_IS_TRUE_FALSE));   
     
+    public static DBConfig DateTimeFormat = new DBConfig( "DateTimeFormat", "yyyy-MM-dd HH:mm:ss", "Datums und Zeitformat");
+    
     public static void registerDefinitions(Root root) {
 
         BaseRegisterDefinitions();
@@ -87,6 +89,7 @@ public class AppConfigDefinitions extends BaseAppConfigDefinitions {
         addLocal(NiceHtmlListInfoTextColor);
         addLocal(SevenZipExtracor);
         addLocal(FileCache);
+        addLocal(DateTimeFormat);
         
         new UpdateListener( root, MaxLineWidth, new UpdateListenerLoadChangesFromString() {
 
