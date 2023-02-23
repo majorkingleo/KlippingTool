@@ -36,7 +36,7 @@ public class ActionPopupSources extends JPopupMenu
 
 
         if (cont != null) {
-            JMenuItem menuItem = new JMenuItem(root.MlM("Eintrag entfernen"));
+            JMenuItem menuItem = new JMenuItem(mainwin.MESSAGE_REMOVE_ENTRY);
 
             add(menuItem);
 

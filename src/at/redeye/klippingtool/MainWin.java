@@ -26,8 +26,11 @@ import javax.swing.*;
  */
 public class MainWin extends BaseDialog implements StatusInformation {
 
-    private String MESSAGE_CLEAR_QUEUE;
-    private String MESSAGE_CLEAR_QUEUE_TITLE;
+    public String MESSAGE_CLEAR_QUEUE;
+    public String MESSAGE_CLEAR_QUEUE_TITLE;
+    public String MESSAGE_SETTINGS;
+    public String MESSAGE_ABOUT;
+    public String MESSAGE_REMOVE_ENTRY;
     Vector<ListDataContainer> listData;
     boolean firstRun = true;
     boolean changeStyle = false;
@@ -113,7 +116,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
                     @Override
                     public void run() {
 
-                        String status_text = "Warte auf Arbeit ... ";
+                        String status_text = MlM("Warte auf Arbeit ... ");
 
                         String message = null;
                         
@@ -128,7 +131,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
                         if( message != null )
                         {
-                            status_text = "Suche ... ";
+                            status_text = MlM("Suche ... ");
                             status_text += message;                            
                         }
 
@@ -148,7 +151,9 @@ public class MainWin extends BaseDialog implements StatusInformation {
 
         MESSAGE_CLEAR_QUEUE = MlM("Soll die Liste tatsächlich geleert werden?");
         MESSAGE_CLEAR_QUEUE_TITLE = MlM("Liste Leeren");
-
+        MESSAGE_SETTINGS = MlM( "Einstellungen" );
+        MESSAGE_ABOUT = MlM( "Über" );
+        MESSAGE_REMOVE_ENTRY = MlM( "Eintrag entfernen" );
 
         new AppConfigDefinitions.UpdateListener(root, AppConfigDefinitions.NiceHtmlList, new AppConfigDefinitions.UpdateListenerLoadChangesFromString() {
 
@@ -308,6 +313,8 @@ public class MainWin extends BaseDialog implements StatusInformation {
             logger.error(ex, ex);
         }
 
+        clipping_thread.interrupt();
+        
         super.close();
     }
 

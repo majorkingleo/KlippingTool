@@ -83,7 +83,7 @@ public class ActionPopupClipboard extends JPopupMenu
 
             // clean queue
             {
-                JMenuItem menuItem = new JMenuItem("Liste leeren");
+                JMenuItem menuItem = new JMenuItem(mainwin.MESSAGE_CLEAR_QUEUE);
                 add(menuItem);
                 menuItem.addActionListener(new ActionListener() {
 
@@ -103,7 +103,7 @@ public class ActionPopupClipboard extends JPopupMenu
     {
             // settings
 
-            JMenuItem menuItem = new JMenuItem("Einstellungen");
+            JMenuItem menuItem = new JMenuItem(mainwin.MESSAGE_SETTINGS);
             add(menuItem);
             menuItem.addActionListener(new ActionListener() {
 
@@ -117,7 +117,7 @@ public class ActionPopupClipboard extends JPopupMenu
         {
             // about
 
-            JMenuItem menuItem = new JMenuItem("Über");
+            JMenuItem menuItem = new JMenuItem(mainwin.MESSAGE_ABOUT);
             add(menuItem);
             menuItem.addActionListener(new ActionListener() {
 
