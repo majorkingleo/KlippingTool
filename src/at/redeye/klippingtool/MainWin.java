@@ -7,6 +7,7 @@ package at.redeye.klippingtool;
 import at.redeye.FrameWork.base.*;
 import at.redeye.FrameWork.utilities.StringUtils;
 import at.redeye.klippingtool.chm.FindCHMFor;
+import at.redeye.klippingtool.cygpath.ConvertCygpath;
 import at.redeye.klippingtool.findinclude.FileCache;
 import at.redeye.klippingtool.findinclude.FindIncludeFor;
 import at.redeye.klippingtool.manpage.FindManPageFor;
@@ -106,6 +107,7 @@ public class MainWin extends BaseDialog implements StatusInformation {
         find_workers.add(new FindIncludeFor(this));        
         find_workers.add(new FindManPageFor(this, jPanelManPage));
         find_workers.add(new FindCHMFor(this, jPanelCHM));
+        find_workers.add(new ConvertCygpath(this));   
         
         getAutoRefreshTimer().schedule(new TimerTask() {
 
