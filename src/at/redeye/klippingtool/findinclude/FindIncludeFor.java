@@ -4,7 +4,6 @@
  */
 package at.redeye.klippingtool.findinclude;
 
-import at.redeye.FrameWork.utilities.WorkerThread.WorkerThread;
 import at.redeye.klippingtool.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,8 +19,6 @@ import javax.swing.JPopupMenu;
  */
 public class FindIncludeFor extends BaseLookup
 {
-    WorkerThread worker_thread;        
-    
     public FindIncludeFor(MainWin mainwin )
     {
        super(mainwin, null);
