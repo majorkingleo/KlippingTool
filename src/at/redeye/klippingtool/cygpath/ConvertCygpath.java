@@ -12,9 +12,7 @@ import at.redeye.klippingtool.*;
  * @author martin
  */
 public class ConvertCygpath extends BaseLookup
-{
-    WorkerThread worker_thread;        
-    
+{    
     public ConvertCygpath(MainWin mainwin )
     {
        super(mainwin, null);
