@@ -4,7 +4,6 @@
  */
 package at.redeye.klippingtool.cygpath;
 
-import at.redeye.FrameWork.utilities.WorkerThread.WorkerThread;
 import at.redeye.klippingtool.*;
 
 /**
