@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "KlippingTool"
-#define MyAppVersion "0.6"
+#define MyAppVersion "0.7"
 #define MyAppPublisher "Martin Oberzalek"
 #define MyAppURL "https://github.com/majorkingleo/KlippingTool"
 #define JDK "jdk-19.0.2"
@@ -23,7 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName=C:\{#MyAppName}
 DefaultGroupName={#MyAppName}
 OutputDir=output
-OutputBaseFilename=KlippingTool_{#MyAppVersion}
+OutputBaseFilename=KlippingTool_setup_{#MyAppVersion}
 ChangesAssociations=no
 SolidCompression=no
 Compression=lzma2/fast
