@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "KlippingTool"
-#define MyAppVersion "0.7"
+#define MyAppVersion "0.8"
 #define MyAppPublisher "Martin Oberzalek"
 #define MyAppURL "https://github.com/majorkingleo/KlippingTool"
 #define JDK "jdk-19.0.2"
@@ -47,6 +47,6 @@ Source: "{#JDK}\*";  DestDir: "{app}\{#JDK}"; Flags: recursesubdirs createallsub
 
 [Icons]
 Name: "{group}\KlippingTool"; Filename: "{#JAVA}"; WorkingDir: "{userappdata}"; IconFilename: "{app}\klippingtool.ico";  Parameters: "-Xmx1024m -jar ""{app}\KlippingTool.jar"""; 
-Name: "{autodesktop}\KlippingTool"; Filename: "{#JAVA}"; WorkingDir: "{userappdata}"; IconFilename: "{app}\klippingtool.ico"; Tasks: desktopicon;  Parameters: "-Xmx1024m -jar ""{app}\KlippingTool.jar"""; 
+Name: "{autodesktop}\KlippingTool"; Filename: "{#JAVA}"; WorkingDir: "{userappdata}"; IconFilename: "{app}\klippingtool.ico"; Tasks: desktopicon;  Parameters: "-Xmx2024m -jar ""{app}\KlippingTool.jar"""; 
 
 
