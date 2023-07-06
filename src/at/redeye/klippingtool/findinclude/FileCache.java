@@ -59,7 +59,13 @@ public class FileCache
         }        
         
         if (cf == null || cf.getFile().lastModified() != file.lastModified() ) {
-            cf = new CachedFile(file, ReadFile.read_file(file.getPath()));
+            
+            try {
+                cf = new CachedFile(file, ReadFile.read_file(file.getPath()));
+            } catch ( OutOfMemoryError err ) {
+                logger.error(err);
+                return "";
+            }
 
             synchronized (file_map) {
                 file_map.put(file.getPath(), cf);

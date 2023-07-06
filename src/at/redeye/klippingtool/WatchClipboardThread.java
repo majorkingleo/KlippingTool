@@ -66,9 +66,21 @@ public class WatchClipboardThread extends Thread
         
         do
         {
-            // mem = logMem("before transfer", mem );
+            try {
+                sleep(500);
+            } catch( InterruptedException ex ) {
+                
+            }
             
-            final Transferable transfer = systemClip.getContents( null );                        
+            // mem = logMem("before transfer", mem );
+            Transferable transfer = null;
+            
+            try {
+                transfer = systemClip.getContents( null );                        
+            } catch( IllegalStateException ex ) {
+                logger.error(ex,ex);                
+                continue;
+            }
             
             // mem = logMem("after transfer", mem );
             
@@ -135,12 +147,7 @@ public class WatchClipboardThread extends Thread
                     logger.error(ex, ex);
                 }
             }
-                
-            try {
-                sleep(500);
-            } catch( InterruptedException ex ) {
-                
-            }
+               
         } while( true );
     }
     
